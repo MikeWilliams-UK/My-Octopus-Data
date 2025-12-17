@@ -2,6 +2,7 @@
 using System.Data.SQLite;
 using System.IO;
 using System.Text;
+using OctopusData.Models;
 
 namespace OctopusData.Helpers;
 
@@ -130,8 +131,8 @@ public partial class SqLiteHelper
         return double.Parse(temp);
     }
 
-    public List<string> GetUsageInformation()
+    public List<MySummary> GetUsageInformation()
     {
-        return new List<string> { "Hello" };
+        return new List<MySummary>();
     }
 }

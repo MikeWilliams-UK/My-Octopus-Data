@@ -62,6 +62,8 @@ namespace OctopusData.Forms
                 _httpHelper = new HttpHelper(_configuration, AccountId.Text, ApiKey.Password);
                 _httpHelper.SetLogger(_logger);
 
+                SqLiteHelper sqLiteHelper = new SqLiteHelper(_account.Id, _logger);
+
                 SetMouseCursor();
                 WriteToRegistry();
 
@@ -84,7 +86,6 @@ namespace OctopusData.Forms
                         {
                             Debug.WriteLine($"Electricity MPAN: {meterPoint.Mpan}");
                             _account.ElectricMpan = meterPoint.Mpan;
-
                             foreach (var meter in meterPoint.Meters)
                             {
                                 Debug.WriteLine($"  Electric meter: {meter.SerialNumber}");
@@ -122,6 +123,10 @@ namespace OctopusData.Forms
                                 }
                             }
                         }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Don't know how to handle multiple properties", "Multiple Properties");
                     }
 
                     Debug.WriteLine($"E:{_supplyDateElectric} G:{_supplyDateGas}");
