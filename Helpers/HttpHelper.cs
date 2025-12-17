@@ -28,8 +28,6 @@ namespace OctopusData.Helpers
 
         public HttpHelper(IConfigurationRoot configuration, string accountId, string apiKey)
         {
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
             _configuration = configuration;
             _accountId = accountId;
             _apiKey = apiKey;
@@ -40,31 +38,47 @@ namespace OctopusData.Helpers
         public async Task<Details?> LoginAsync()
         {
             var uri = ConfigHelper.GetString(_configuration, "LoginUri", string.Empty);
-            var requestUri = string.Format(uri, _accountId);
+            if (!string.IsNullOrEmpty(uri))
+            {
+                var requestUri = string.Format(uri, _accountId);
 
-            return await SendWithRedirect<Details>(requestUri);
+                return await SendWithRedirect<Details>(requestUri);
+            }
+
+            return null;
         }
 
         public async Task<Usage?> ObtainElectricHalfHourlyUsageAsync(OctopusAccount account, DateTime currentDate)
         {
             var uri = ConfigHelper.GetString(_configuration, "ElectricHalfHourlyUri", string.Empty);
-            var requestUri = string.Format(uri,
-                account.ElectricMpan,
-                account.ElectricMeterSerial,
-                currentDate.ToString("yyyy-MM-dd"));
 
-            return await SendWithRedirect<Usage>(requestUri);
+            if (!string.IsNullOrEmpty(uri))
+            {
+                var requestUri = string.Format(uri,
+                    account.ElectricMpan,
+                    account.ElectricMeterSerial,
+                    currentDate.ToString("yyyy-MM-dd"));
+
+                return await SendWithRedirect<Usage>(requestUri);
+            }
+
+            return null;
         }
 
         public async Task<Usage?> ObtainGasHalfHourlyUsageAsync(OctopusAccount account, DateTime currentDate)
         {
             var uri = ConfigHelper.GetString(_configuration, "GasHalfHourlyUri", string.Empty);
-            var requestUri = string.Format(uri,
-                account.GasMprn,
-                account.GasMeterSerial,
-                currentDate.ToString("yyyy-MM-dd"));
 
-            return await SendWithRedirect<Usage>(requestUri);
+            if (!string.IsNullOrEmpty(uri))
+            {
+                var requestUri = string.Format(uri,
+                    account.GasMprn,
+                    account.GasMeterSerial,
+                    currentDate.ToString("yyyy-MM-dd"));
+
+                return await SendWithRedirect<Usage>(requestUri);
+            }
+            return null;
         }
 
         private async Task<T?> SendWithRedirect<T>(string requestUri)
