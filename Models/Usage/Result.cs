@@ -12,4 +12,9 @@ public class Result
 
     [JsonPropertyName("interval_end")]
     public DateTime IntervalEnd { get; set; }
+
+    public override string ToString()
+    {
+        return $"{IntervalStart} {IntervalEnd} {Consumption}";
+    }
 }

@@ -101,7 +101,6 @@ namespace OctopusData.Forms
                             }
                         }
 
-
                         // Handle Gas
                         foreach (var meterPoint in property.GasMeterPoints)
                         {
@@ -153,18 +152,16 @@ namespace OctopusData.Forms
                     var electric = await _httpHelper.ObtainElectricHalfHourlyUsageAsync(_account, currentDay);
                     if (electric != null)
                     {
-                        Debug.WriteLine($"Retrieved {electric.Results.Count} half-hourly records for today.");
+                        Debug.WriteLine($"Retrieved {electric.Results.Count} half-hourly electric records for {currentDay}.");
                     }
                     var gas = await _httpHelper.ObtainGasHalfHourlyUsageAsync(_account, currentDay);
                     if (gas != null)
                     {
-                        Debug.WriteLine($"Retrieved {gas.Results.Count} half-hourly records for today.");
+                        Debug.WriteLine($"Retrieved {gas.Results.Count} half-hourly gas records for {currentDay}.");
                     }
 
                     // Go back in time one day
                     currentDay = currentDay.AddDays(-1);
-
-                    break;
                 }
             }
             catch (Exception exception)
@@ -201,7 +198,6 @@ namespace OctopusData.Forms
         {
             SetStatusText($"Account Id: {_account.Id}");
         }
-
 
         public void SetStatusText(string message, bool log = false)
         {
