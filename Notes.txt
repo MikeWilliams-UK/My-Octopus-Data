@@ -1,0 +1,8 @@
+﻿Useful web sites for working with JSON:
+---------------------------------------
+
+https://jsonformatter.org/
+
+https://json2csharp.com/
+	Use PascalCase
+	Use JsonPropertyName (.NET Core)
