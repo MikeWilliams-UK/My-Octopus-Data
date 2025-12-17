@@ -132,7 +132,7 @@ namespace OctopusData.Forms
             }
         }
 
-        private async void OnClick_ReadUsage(object sender, RoutedEventArgs e)
+        private async void OnClick_ReadUsageAsync(object sender, RoutedEventArgs e)
         {
             _logger = new Logger(ref logNumber);
             _httpHelper.SetLogger(_logger);
@@ -142,22 +142,31 @@ namespace OctopusData.Forms
 
             try
             {
-                var targetDate = _supplyDateElectric < _supplyDateGas
-                                ? _supplyDateElectric
-                                : _supplyDateGas;
+                // Fetch Electric Usage
+                SetStatusText("Fetching Electric usage ...");
 
-                DateTime currentDay = DateTime.UtcNow.Date;
-                while (currentDay >= targetDate)
+                var currentDay = DateTime.UtcNow.Date;
+                while (currentDay >= _supplyDateElectric)
                 {
                     var electric = await _httpHelper.ObtainElectricHalfHourlyUsageAsync(_account, currentDay);
                     if (electric != null)
                     {
-                        Debug.WriteLine($"Retrieved {electric.Results.Count} half-hourly electric records for {currentDay}.");
+                        Debug.WriteLine($"Retrieved {electric.Results.Count} half-hourly electric records for {currentDay:d}.");
                     }
+
+                    // Go back in time one day
+                    currentDay = currentDay.AddDays(-1);
+                }
+
+                // Fetch Gas usage
+                SetStatusText("Fetching Gas usage ...");
+                currentDay = DateTime.UtcNow.Date;
+                while (currentDay >= _supplyDateGas)
+                {
                     var gas = await _httpHelper.ObtainGasHalfHourlyUsageAsync(_account, currentDay);
                     if (gas != null)
                     {
-                        Debug.WriteLine($"Retrieved {gas.Results.Count} half-hourly gas records for {currentDay}.");
+                        Debug.WriteLine($"Retrieved {gas.Results.Count} half-hourly gas records for {currentDay:d}.");
                     }
 
                     // Go back in time one day
@@ -172,10 +181,7 @@ namespace OctopusData.Forms
             finally
             {
                 ClearDown();
-                ShowAccountInfo();
             }
-
-            ClearDown();
         }
 
         private void OnSelectionChanged_StopWhen(object sender, SelectionChangedEventArgs e)
@@ -226,7 +232,7 @@ namespace OctopusData.Forms
             CursorManager.ClearWaitCursor(CancelOperations);
             _cancelRequested = false;
 
-            SetStatusText("");
+            ShowAccountInfo();
             SetStateOfControls(true);
 
             GC.WaitForPendingFinalizers();

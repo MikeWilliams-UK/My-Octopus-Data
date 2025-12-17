@@ -146,7 +146,7 @@
                 Grid.Column="0"
                 Margin="0,1,1,1"
                 VerticalAlignment="Center"
-                Click="OnClick_ReadUsage"
+                Click="OnClick_ReadUsageAsync"
                 IsEnabled="False"
                 ToolTip="Get Usage data for selected account">
                 Get Usage

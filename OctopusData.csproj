@@ -8,16 +8,16 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+	<ItemGroup>
+		<ApplicationDefinition Include="Forms\App.xaml" />
+	</ItemGroup>
+
   <ItemGroup>
     <None Remove="AppSettings.json" />
   </ItemGroup>
 
   <ItemGroup>
     <Page Remove="Forms\App.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ApplicationDefinition Include="Forms\App.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +33,11 @@
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
     <PackageReference Include="System.Data.SQLite.EF6" Version="2.0.2" />
     <PackageReference Include="System.Text.Json" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\GraphQL\" />
+    <Folder Include="Resources\SqLite\" />
   </ItemGroup>
 
 </Project>
