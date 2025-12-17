@@ -160,6 +160,7 @@ namespace OctopusData.Forms
 
                 // Fetch Gas usage
                 SetStatusText("Fetching Gas usage ...");
+
                 currentDay = DateTime.UtcNow.Date;
                 while (currentDay >= _supplyDateGas)
                 {
@@ -181,6 +182,7 @@ namespace OctopusData.Forms
             finally
             {
                 ClearDown();
+                ShowAccountInfo();
             }
         }
 
@@ -203,6 +205,8 @@ namespace OctopusData.Forms
         private void ShowAccountInfo()
         {
             SetStatusText($"Account Id: {_account.Id}");
+            var sqlite = new SqLiteHelper(_account.Id, _logger!);
+            AccountStatistics.ItemsSource = sqlite.GetUsageInformation();
         }
 
         public void SetStatusText(string message, bool log = false)
@@ -232,7 +236,6 @@ namespace OctopusData.Forms
             CursorManager.ClearWaitCursor(CancelOperations);
             _cancelRequested = false;
 
-            ShowAccountInfo();
             SetStateOfControls(true);
 
             GC.WaitForPendingFinalizers();

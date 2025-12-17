@@ -1,4 +1,5 @@
-﻿using System.Data.SQLite;
+﻿using System.Collections;
+using System.Data.SQLite;
 using System.IO;
 using System.Text;
 
@@ -45,15 +46,13 @@ public partial class SqLiteHelper
 
     private void ExecuteStatements(string[] statements)
     {
-        using (var connection = GetConnection())
+        using var connection = GetConnection();
+        foreach (var statement in statements)
         {
-            foreach (var statement in statements)
+            if (!string.IsNullOrEmpty(statement) && !statement.StartsWith('-'))
             {
-                if (!string.IsNullOrEmpty(statement) && !statement.StartsWith('-'))
-                {
-                    var command = new SQLiteCommand(statement, connection);
-                    command.ExecuteNonQuery();
-                }
+                var command = new SQLiteCommand(statement, connection);
+                command.ExecuteNonQuery();
             }
         }
     }
@@ -62,23 +61,21 @@ public partial class SqLiteHelper
     {
         var result = false;
 
-        using (var connection = GetConnection())
+        using var connection = GetConnection();
+        var stringBuilder = new StringBuilder();
+
+        stringBuilder.AppendLine("SELECT sql");
+        stringBuilder.AppendLine("FROM sqlite_master");
+        stringBuilder.AppendLine($"WHERE type='table' AND name='{tableName}'");
+
+        var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+        var reader = command.ExecuteReader();
+        if (reader.HasRows)
         {
-            var stringBuilder = new StringBuilder();
-
-            stringBuilder.AppendLine("SELECT sql");
-            stringBuilder.AppendLine("FROM sqlite_master");
-            stringBuilder.AppendLine($"WHERE type='table' AND name='{tableName}'");
-
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
-            var reader = command.ExecuteReader();
-            if (reader.HasRows)
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    var sql = FieldAsString(reader["sql"]);
-                    result = sql.Contains(columnName);
-                }
+                var sql = FieldAsString(reader["sql"]);
+                result = sql.Contains(columnName);
             }
         }
 
@@ -119,14 +116,7 @@ public partial class SqLiteHelper
     private int FieldAsInt(object field)
     {
         var temp = $"{field}";
-        if (string.IsNullOrEmpty(temp))
-        {
-            return 0;
-        }
-        else
-        {
-            return int.Parse(temp);
-        }
+        return string.IsNullOrEmpty(temp) ? 0 : int.Parse(temp);
     }
 
     private double FieldAsDouble(object field)
@@ -136,9 +126,12 @@ public partial class SqLiteHelper
         {
             return 0;
         }
-        else
-        {
-            return double.Parse(temp);
-        }
+
+        return double.Parse(temp);
+    }
+
+    public List<string> GetUsageInformation()
+    {
+        return new List<string> { "Hello" };
     }
 }

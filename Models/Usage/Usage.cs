@@ -8,10 +8,10 @@ public class Usage
     public int Count { get; set; }
 
     [JsonPropertyName("next")]
-    public object Next { get; set; }
+    public object Next { get; set; } = string.Empty;
 
     [JsonPropertyName("previous")]
-    public object Previous { get; set; }
+    public object Previous { get; set; } = string.Empty;
 
     [JsonPropertyName("results")]
     public List<Result> Results { get; set; } = [];
