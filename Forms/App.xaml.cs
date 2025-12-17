@@ -8,5 +8,4 @@ namespace OctopusData.Forms
     public partial class App : Application
     {
     }
-
 }
