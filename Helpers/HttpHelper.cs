@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
+using OctopusData.Models.Account;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 
 namespace OctopusData.Helpers;
 
@@ -46,6 +48,8 @@ public class HttpHelper
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                Details myDeserializedClass = JsonSerializer.Deserialize<Details>(responseContent);
                 Debug.WriteLine(responseContent);
             }
             else
