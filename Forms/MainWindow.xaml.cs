@@ -19,6 +19,7 @@ namespace OctopusData.Forms
         private readonly IConfigurationRoot _configuration;
 
         private bool _cancelRequested;
+        private bool _isUpdating;
 
         private string _stopWhen = string.Empty;
 
@@ -198,6 +199,8 @@ namespace OctopusData.Forms
             _logger = new Logger(ref logNumber);
             _httpHelper.SetLogger(_logger);
 
+            SqLiteHelper sqLiteHelper = new SqLiteHelper(_account.Id, _logger);
+
             SetMouseCursor();
             SetStateOfControls(false);
 
@@ -213,6 +216,32 @@ namespace OctopusData.Forms
                     if (electric != null)
                     {
                         Debug.WriteLine($"Retrieved {electric.Results.Count} half-hourly electric records for {currentDay:d}.");
+
+                        if (electric.Results.Count > 0)
+                        {
+                            if (sqLiteHelper.CountHalfHourly(Constants.Electric,
+                                    currentDay.Year, currentDay.Month, currentDay.Day) != 48)
+                            {
+                                List<OctopusHalfHourly> octopusHalfHourlies = [];
+
+                                foreach (var electricResult in electric.Results)
+                                {
+                                    var octopusHalfHourly = new OctopusHalfHourly
+                                    {
+                                        Consumption = electricResult.Consumption,
+                                        Interval = new OctopusInterval
+                                        {
+                                            Start = electricResult.IntervalStart,
+                                            End = electricResult.IntervalEnd
+                                        }
+                                    };
+                                    octopusHalfHourlies.Add(octopusHalfHourly);
+                                }
+
+                                Debug.WriteLine($"Saving {electric.Results.Count} half-hourly electric records for {currentDay:d}.");
+                                sqLiteHelper.UpsertHalfHourly(Constants.Electric, octopusHalfHourlies);
+                            }
+                        }
                     }
 
                     // Go back in time one day
@@ -229,6 +258,32 @@ namespace OctopusData.Forms
                     if (gas != null)
                     {
                         Debug.WriteLine($"Retrieved {gas.Results.Count} half-hourly gas records for {currentDay:d}.");
+
+                        if (gas.Results.Count > 0)
+                        {
+                            if (sqLiteHelper.CountHalfHourly(Constants.Gas,
+                                    currentDay.Year, currentDay.Month, currentDay.Day) != 48)
+                            {
+                                List<OctopusHalfHourly> octopusHalfHourlies = [];
+
+                                foreach (var electricResult in gas.Results)
+                                {
+                                    var octopusHalfHourly = new OctopusHalfHourly
+                                    {
+                                        Consumption = electricResult.Consumption,
+                                        Interval = new OctopusInterval
+                                        {
+                                            Start = electricResult.IntervalStart,
+                                            End = electricResult.IntervalEnd
+                                        }
+                                    };
+                                    octopusHalfHourlies.Add(octopusHalfHourly);
+                                }
+
+                                Debug.WriteLine($"Saving {gas.Results.Count} half-hourly gas records for {currentDay:d}.");
+                                sqLiteHelper.UpsertHalfHourly(Constants.Gas, octopusHalfHourlies);
+                            }
+                        }
                     }
 
                     // Go back in time one day
@@ -247,6 +302,40 @@ namespace OctopusData.Forms
             }
         }
 
+
+        private void OnTextChanged_VisibleApiKey(object sender, TextChangedEventArgs e)
+        {
+            if (_isUpdating)
+            {
+                return;
+            }
+            _isUpdating = true;
+            ApiKey.Password = VisibleApiKey.Text;
+            _isUpdating = false;
+        }
+
+        private void OnPasswordChanged_ApiKey(object sender, RoutedEventArgs e)
+        {
+            if (_isUpdating)
+            {
+                return;
+            }
+            _isUpdating = true;
+            VisibleApiKey.Text = ApiKey.Password;
+            _isUpdating = false;
+        }
+
+        private void OnChecked_Reveal(object sender, RoutedEventArgs e)
+        {
+            VisibleApiKey.Visibility = Visibility.Visible;
+            ApiKey.Visibility = Visibility.Collapsed;
+        }
+
+        private void OnUnchecked_Reveal(object sender, RoutedEventArgs e)
+        {
+            VisibleApiKey.Visibility = Visibility.Collapsed;
+            ApiKey.Visibility = Visibility.Visible;
+        }
         private void OnSelectionChanged_StopWhen(object sender, SelectionChangedEventArgs e)
         {
         }

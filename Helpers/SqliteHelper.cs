@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Data.SQLite;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using OctopusData.Models;
@@ -120,6 +121,17 @@ public partial class SqLiteHelper
         return string.IsNullOrEmpty(temp) ? 0 : int.Parse(temp);
     }
 
+    private DateTime FieldAsTime(object field)
+    {
+        var temp = $"{field}";
+        if (string.IsNullOrEmpty(temp))
+        {
+            return DateTime.MaxValue;
+        }
+
+        return DateTime.ParseExact(temp, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+    }
+
     private double FieldAsDouble(object field)
     {
         var temp = $"{field}";
@@ -133,6 +145,67 @@ public partial class SqLiteHelper
 
     public List<MySummary> GetUsageInformation()
     {
-        return new List<MySummary>();
+        var result = new List<MySummary>();
+
+        using (var connection = GetConnection())
+        {
+            // Electric first
+            GetHalfHourlyUsageMetric(connection, StringHelper.ProperCase(Constants.Electric));
+            // Then Gas
+            GetHalfHourlyUsageMetric(connection, StringHelper.ProperCase(Constants.Gas));
+        }
+
+        return result;
+
+        // Local Functions
+
+        void GetHalfHourlyUsageMetric(SQLiteConnection connection, string fuelType)
+        {
+            var stringBuilder = new StringBuilder();
+
+            stringBuilder.AppendLine("SELECT MAX(StartTime) AS Max, MIN(StartTime) AS Min, Count(1) AS Count");
+            stringBuilder.AppendLine($"FROM HalfHourly{fuelType}");
+
+            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            var reader = command.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    ExtractMetric(reader, "Half Hourly", fuelType);
+                }
+            }
+        }
+
+        void ExtractMetric(SQLiteDataReader reader, string metric, string fuelType)
+        {
+            var from = FieldAsString(reader["Min"]);
+            var to = FieldAsString(reader["Max"]);
+            var count = FieldAsInt(reader["count"]);
+
+            if (from.Length > 16)
+            {
+                from = from.Substring(0, 16);
+            }
+            if (to.Length > 16)
+            {
+                to = to.Substring(0, 16);
+            }
+
+            if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
+            {
+                var info = new MySummary
+                {
+                    FuelType = StringHelper.ProperCase(fuelType),
+                    Metric = metric,
+                    From = from,
+                    To = to,
+                    Records = $"{count:#,##0}"
+                };
+
+                result.Add(info);
+            }
+        }
     }
+
 }
