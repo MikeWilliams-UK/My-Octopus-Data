@@ -80,42 +80,50 @@ namespace OctopusData.Forms
                     if (details.Properties.Count == 1)
                     {
                         var property = details.Properties[0];
-                        var p = new OctopusProperty
+                        var octopusProperty = new OctopusProperty
                         {
                             Id = property.Id
                         };
-                        sqLiteHelper.UpsertProperty(p);
+                        sqLiteHelper.UpsertProperty(octopusProperty);
 
                         // Handle Electricity
                         foreach (var meterPoint in property.ElectricityMeterPoints)
                         {
-                            Debug.WriteLine($"Electricity MPAN: {meterPoint.Mpan}");
-                            var emp = new OctopusMeterPoint
+                            var octopusMeterPoint = new OctopusMeterPoint
                             {
                                 Mpxn = meterPoint.Mpan,
                                 FuelType = Constants.Electric,
                                 ProfileClass = meterPoint.ProfileClass,
                                 ConsumptionStandard = meterPoint.ConsumptionStandard
                             };
-                            sqLiteHelper.UpsertMeterPoints(emp);
+                            sqLiteHelper.UpsertMeterPoints(octopusMeterPoint);
 
                             _account.ElectricMpan = meterPoint.Mpan;
                             foreach (var meter in meterPoint.Meters)
                             {
-                                Debug.WriteLine($"  Electric meter: {meter.SerialNumber}");
-                                var m = new OctopusMeter
+                                var octopusMeter = new OctopusMeter
                                 {
                                     SerialNumber = meter.SerialNumber,
                                     FuelType = Constants.Electric
                                 };
-                                sqLiteHelper.UpsertMeter(m);
+                                sqLiteHelper.UpsertMeter(octopusMeter);
+
+                                foreach (Register register in meter.Registers)
+                                {
+                                    var octopusMeterRegister = new OctopusMeterRegister
+                                    {
+                                        Id = register.Identifier,
+                                        Rate = register.Rate,
+                                        IsSettlement = register.IsSettlementRegister
+                                    };
+                                    sqLiteHelper.UpsertMeterRegisters(octopusMeterRegister);
+                                }
 
                                 _account.ElectricMeterSerial = meter.SerialNumber;
                             }
 
                             foreach (var agreement in meterPoint.Agreements)
                             {
-                                Debug.WriteLine($"  Electricity agreement {agreement.TariffCode} {agreement.ValidFrom} {agreement.ValidTo}");
                                 var octopusAgreement = new OctopusAgreement
                                 {
                                     StartDate = agreement.ValidFrom,
@@ -135,34 +143,30 @@ namespace OctopusData.Forms
                         // Handle Gas
                         foreach (var meterPoint in property.GasMeterPoints)
                         {
-                            Debug.WriteLine($"Gas MPRN: {meterPoint.Mprn}");
-
-                            var emp = new OctopusMeterPoint
+                            var octopusMeterPoint = new OctopusMeterPoint
                             {
                                 Mpxn = meterPoint.Mprn,
                                 FuelType = Constants.Gas,
                                 ConsumptionStandard = meterPoint.ConsumptionStandard
                             };
-                            sqLiteHelper.UpsertMeterPoints(emp);
+                            sqLiteHelper.UpsertMeterPoints(octopusMeterPoint);
 
                             _account.GasMprn = meterPoint.Mprn;
 
                             foreach (var meter in meterPoint.Meters)
                             {
-                                Debug.WriteLine($"  Gas meter: {meter.SerialNumber}");
-                                var m = new OctopusMeter
+                                var octopusMeter = new OctopusMeter
                                 {
                                     SerialNumber = meter.SerialNumber,
                                     FuelType = Constants.Gas
                                 };
-                                sqLiteHelper.UpsertMeter(m);
+                                sqLiteHelper.UpsertMeter(octopusMeter);
 
                                 _account.GasMeterSerial = meter.SerialNumber;
                             }
 
                             foreach (var agreement in meterPoint.Agreements)
                             {
-                                Debug.WriteLine($"  Gas agreement {agreement.TariffCode} {agreement.ValidFrom} {agreement.ValidTo}");
                                 var octopusAgreement = new OctopusAgreement
                                 {
                                     StartDate = agreement.ValidFrom,
@@ -182,8 +186,6 @@ namespace OctopusData.Forms
                     {
                         MessageBox.Show("Don't know how to handle multiple properties", "Multiple Properties");
                     }
-
-                    Debug.WriteLine($"E:{_supplyDateElectric} G:{_supplyDateGas}");
                 }
 
                 ClearDown();

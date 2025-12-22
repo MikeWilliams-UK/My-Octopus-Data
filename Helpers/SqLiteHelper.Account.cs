@@ -76,22 +76,18 @@ public partial class SqLiteHelper
         }
     }
 
-    public void UpsertMeterRegisters(Register register)
+    public void UpsertMeterRegisters(OctopusMeterRegister register)
     {
         using (var connection = GetConnection())
         {
             var stringBuilder = new StringBuilder();
 
-            //stringBuilder.AppendLine("INSERT INTO MeterRegisters");
-            //stringBuilder.AppendLine("VALUES");
-            //stringBuilder.AppendLine($"('{register.StartDate}', '{register.EndDate}', '{fuelType}',");
-            //stringBuilder.AppendLine($" '{register.MeterSerialNumber}', '{register.Id}',");
-            //stringBuilder.AppendLine($" '{register.TimingCategory}', '{register.UnitOfMeasurement}')");
-            //stringBuilder.AppendLine("ON CONFLICT (StartDate, MeterSerialNumber, Id)");
-            //stringBuilder.AppendLine("DO UPDATE SET");
-            //stringBuilder.AppendLine("  StartDate = excluded.StartDate, EndDate = excluded.EndDate, FuelType = excluded.FuelType,");
-            //stringBuilder.AppendLine("  Id = excluded.Id, TimingCategory = excluded.TimingCategory, UnitOfMeasurement = excluded.UnitOfMeasurement,");
-            //stringBuilder.AppendLine("  MeterSerialNumber = excluded.MeterSerialNumber");
+            stringBuilder.AppendLine("INSERT INTO MeterRegisters");
+            stringBuilder.AppendLine("VALUES");
+            stringBuilder.AppendLine($"('{register.Id}', '{register.Rate}', '{Constants.Electric}')");
+            stringBuilder.AppendLine("ON CONFLICT (Id)");
+            stringBuilder.AppendLine("DO UPDATE SET");
+            stringBuilder.AppendLine("  Id = excluded.Id, Rate = excluded.Rate, FuelType = excluded.FuelType");
 
             var command = new SQLiteCommand(stringBuilder.ToString(), connection);
             command.ExecuteNonQuery();
