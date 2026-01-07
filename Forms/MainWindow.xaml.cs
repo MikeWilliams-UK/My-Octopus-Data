@@ -4,6 +4,7 @@ using OctopusData.Helpers;
 using OctopusData.Models;
 using OctopusData.Models.Account;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -32,6 +33,9 @@ namespace OctopusData.Forms
 
         private DateTime _supplyDateElectric = DateTime.MaxValue;
         private DateTime _supplyDateGas = DateTime.MaxValue;
+
+        private DateTime _lastDateElectric = DateTime.MinValue;
+        private DateTime _lastDateGas = DateTime.MinValue;
 
         private DispatcherTimer _timer;
 
@@ -210,7 +214,8 @@ namespace OctopusData.Forms
                 SetStatusText("Fetching Electric usage ...");
 
                 var currentDay = DateTime.UtcNow.Date;
-                while (currentDay >= _supplyDateElectric)
+                // ToDo: Change second condition to allow for fetching all time
+                while (currentDay > _supplyDateElectric && currentDay > _lastDateElectric)
                 {
                     var electric = await _httpHelper.ObtainElectricHalfHourlyUsageAsync(_account, currentDay);
                     if (electric != null)
@@ -248,11 +253,13 @@ namespace OctopusData.Forms
                     currentDay = currentDay.AddDays(-1);
                 }
 
+                currentDay = DateTime.UtcNow.Date;
+
                 // Fetch Gas usage
                 SetStatusText("Fetching Gas usage ...");
 
-                currentDay = DateTime.UtcNow.Date;
-                while (currentDay >= _supplyDateGas)
+                // ToDo: Change second condition to allow for fetching all time
+                while (currentDay > _supplyDateGas && currentDay > _lastDateGas)
                 {
                     var gas = await _httpHelper.ObtainGasHalfHourlyUsageAsync(_account, currentDay);
                     if (gas != null)
@@ -356,7 +363,21 @@ namespace OctopusData.Forms
         {
             SetStatusText($"Account Id: {_account.Id}");
             var sqlite = new SqLiteHelper(_account.Id, _logger!);
-            AccountStatistics.ItemsSource = sqlite.GetUsageInformation();
+
+            var summary = sqlite.GetUsageInformation();
+            var electric = summary.FirstOrDefault(s => s.FuelType == Constants.Electric);
+            var gas = summary.FirstOrDefault(s => s.FuelType == Constants.Gas);
+
+            if (electric != null)
+            {
+                _lastDateElectric = DateTime.ParseExact(electric.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+            }
+            if (gas != null)
+            {
+                _lastDateGas = DateTime.ParseExact(gas.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+            }
+
+            AccountStatistics.ItemsSource = summary;
         }
 
         public void SetStatusText(string message, bool log = false)
