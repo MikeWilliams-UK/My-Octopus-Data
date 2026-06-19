@@ -5,5 +5,5 @@ namespace OctopusData.Models.Cost;
 public class Costs
 {
     [JsonPropertyName("data")]
-    public Data Data { get; set; }
+    public Data Data { get; set; } = new();
 }

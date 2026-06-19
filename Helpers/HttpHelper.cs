@@ -171,7 +171,7 @@ namespace OctopusData.Helpers
 
             KrakenResponse? reposnse  = await PostWithRedirect<KrakenResponse>(requestUri, graphQl);
 
-            string token = reposnse?.data.obtainKrakenToken.token;
+            string token = reposnse?.Data.ObtainKrakenToken.Token;
 
             return token;
         }

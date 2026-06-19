@@ -1,31 +1,57 @@
-﻿namespace OctopusData.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace OctopusData.Models;
 
 public class KrakenResponse
 {
-    public KrakenData data { get; set; }
+    [JsonPropertyName("data")]
+    public KrakenData Data { get; set; } = new();
 }
 
 public class KrakenData
 {
-    public ObtainKrakenToken obtainKrakenToken { get; set; }
+    [JsonPropertyName("obtainKrakenToken")]
+    public ObtainKrakenToken ObtainKrakenToken { get; set; } = new();
 }
 
 public class ObtainKrakenToken
 {
-    public string token { get; set; }
-    public string refreshToken { get; set; }
-    public Payload payload { get; set; }
-    public long refreshExpiresIn { get; set; }
+    [JsonPropertyName("token")]
+    public string Token { get; set; } = string.Empty;
+
+    [JsonPropertyName("refreshToken")]
+    public string RefreshToken { get; set; } = string.Empty;
+
+    [JsonPropertyName("payload")]
+    public Payload Payload { get; set; } = new();
+
+    [JsonPropertyName("refreshExpiresIn")]
+    public long RefreshExpiresIn { get; set; }
 }
 
 public class Payload
 {
-    public string sub { get; set; }
-    public string gty { get; set; }
-    public string email { get; set; }
-    public string tokenUse { get; set; }
-    public string iss { get; set; }
-    public long iat { get; set; }
-    public long exp { get; set; }
-    public long origIat { get; set; }
+    [JsonPropertyName("refreshExpiresIn")]
+    public string Sub { get; set; } = string.Empty;
+
+    [JsonPropertyName("qty")]
+    public string Qty { get; set; } = string.Empty;
+
+    [JsonPropertyName("email")]
+    public string Email { get; set; } = string.Empty;
+
+    [JsonPropertyName("tokenUse")]
+    public string TokenUse { get; set; } = string.Empty;
+
+    [JsonPropertyName("iss")]
+    public string Iss { get; set; } = string.Empty;
+
+    [JsonPropertyName("iat")]
+    public long Iat { get; set; }
+
+    [JsonPropertyName("exp")]
+    public long Exp { get; set; }
+
+    [JsonPropertyName("origIat")]
+    public long OrigIat { get; set; }
 }

@@ -1,10 +1,10 @@
 ﻿<Window
     x:Class="OctopusData.Forms.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="Your Octopus SMART meter data"
+    Title="Your Octopus SMART meter Data"
     Width="500"
     Height="450"
     MinWidth="400"
@@ -80,10 +80,9 @@
                 <ToggleButton
                     x:Name="Reveal"
                     Grid.Column="1"
-                    Margin="2 0 0 0"
                     Width="32"
                     Height="20"
-
+                    Margin="2,0,0,0"
                     Checked="OnChecked_Reveal"
                     Content="👁"
                     IsChecked="False"
@@ -169,7 +168,7 @@
                 Margin="0,0,0,1"
                 IsEnabled="False"
                 SelectionChanged="OnSelectionChanged_StopWhen"
-                ToolTip="Select range of usage data to fetch" />
+                ToolTip="Select range of usage Data to fetch" />
 
             <Button
                 x:Name="ReadUsage"
@@ -179,7 +178,7 @@
                 VerticalAlignment="Center"
                 Click="OnClick_ReadUsageAsync"
                 IsEnabled="False"
-                ToolTip="Get Usage data for selected account">
+                ToolTip="Get Usage Data for selected account">
                 Get Usage
             </Button>
             <Button
@@ -201,7 +200,7 @@
                 VerticalAlignment="Center"
                 Click="OnClick_ExportUsage"
                 IsEnabled="False"
-                ToolTip="Export data for selected account">
+                ToolTip="Export Data for selected account">
                 Export Data
             </Button>
             <Button
