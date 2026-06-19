@@ -6,3 +6,6 @@ https://jsonformatter.org/
 https://json2csharp.com/
 	Use PascalCase
 	Use JsonPropertyName (.NET Core)
+
+Database folder
+C:\ProgramData\OctopusData

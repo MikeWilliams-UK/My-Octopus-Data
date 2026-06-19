@@ -1,15 +1,16 @@
-﻿<Window x:Class="OctopusData.Forms.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
-        Title="Your Octopus SMART meter data"
-        Width="500"
-        Height="450"
-        MinWidth="400"
-        MinHeight="350"
-        Loaded="OnLoaded_MainWindow">
+﻿<Window
+    x:Class="OctopusData.Forms.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Your Octopus SMART meter Data"
+    Width="500"
+    Height="450"
+    MinWidth="400"
+    MinHeight="350"
+    Loaded="OnLoaded_MainWindow"
+    mc:Ignorable="d">
     <Grid Margin="4">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -41,6 +42,7 @@
                 x:Name="AccountId"
                 Grid.Row="0"
                 Grid.Column="1"
+                Height="20"
                 Margin="2"
                 VerticalAlignment="Center" />
             <TextBlock
@@ -50,13 +52,42 @@
                 VerticalAlignment="Center">
                 Token:
             </TextBlock>
-            <PasswordBox
-                x:Name="ApiKey"
+            <Grid
                 Grid.Row="1"
                 Grid.Column="1"
-                Margin="2"
-                VerticalAlignment="Center"
-                PasswordChar="•" />
+                Margin="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <PasswordBox
+                    x:Name="ApiKey"
+                    Grid.Column="0"
+                    Height="20"
+                    VerticalAlignment="Center"
+                    PasswordChanged="OnPasswordChanged_ApiKey"
+                    PasswordChar="•" />
+                <TextBox
+                    x:Name="VisibleApiKey"
+                    Grid.Column="0"
+                    Height="20"
+                    VerticalAlignment="Center"
+                    TextChanged="OnTextChanged_VisibleApiKey"
+                    Visibility="Collapsed" />
+                <ToggleButton
+                    x:Name="Reveal"
+                    Grid.Column="1"
+                    Width="32"
+                    Height="20"
+                    Margin="2,0,0,0"
+                    Checked="OnChecked_Reveal"
+                    Content="👁"
+                    IsChecked="False"
+                    Unchecked="OnUnchecked_Reveal" />
+            </Grid>
             <Button
                 x:Name="Login"
                 Grid.Row="0"
@@ -137,7 +168,7 @@
                 Margin="0,0,0,1"
                 IsEnabled="False"
                 SelectionChanged="OnSelectionChanged_StopWhen"
-                ToolTip="Select range of usage data to fetch" />
+                ToolTip="Select range of usage Data to fetch" />
 
             <Button
                 x:Name="ReadUsage"
@@ -145,21 +176,21 @@
                 Grid.Column="0"
                 Margin="0,1,1,1"
                 VerticalAlignment="Center"
-                Click="OnClick_ReadUsage"
+                Click="OnClick_ReadUsageAsync"
                 IsEnabled="False"
-                ToolTip="Get Usage data for selected account">
+                ToolTip="Get Usage Data for selected account">
                 Get Usage
             </Button>
             <Button
-                x:Name="ReadMeterReadings"
+                x:Name="ReadCosts"
                 Grid.Row="1"
                 Grid.Column="1"
                 Margin="1"
                 VerticalAlignment="Center"
-                Click="OnClick_ReadMeterReadings"
+                Click="OnClick_GetCosts"
                 IsEnabled="False"
-                ToolTip="Get Meter Readings for selected account">
-                Get Readings
+                ToolTip="Get Costs for selected account">
+                Get Costs
             </Button>
             <Button
                 x:Name="ExportUsage"
@@ -169,7 +200,7 @@
                 VerticalAlignment="Center"
                 Click="OnClick_ExportUsage"
                 IsEnabled="False"
-                ToolTip="Export data for selected account">
+                ToolTip="Export Data for selected account">
                 Export Data
             </Button>
             <Button

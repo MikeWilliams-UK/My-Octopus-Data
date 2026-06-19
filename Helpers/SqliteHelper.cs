@@ -1,6 +1,9 @@
-﻿using System.Data.SQLite;
+﻿using System.Collections;
+using System.Data.SQLite;
+using System.Globalization;
 using System.IO;
 using System.Text;
+using OctopusData.Models;
 
 namespace OctopusData.Helpers;
 
@@ -45,15 +48,13 @@ public partial class SqLiteHelper
 
     private void ExecuteStatements(string[] statements)
     {
-        using (var connection = GetConnection())
+        using var connection = GetConnection();
+        foreach (var statement in statements)
         {
-            foreach (var statement in statements)
+            if (!string.IsNullOrEmpty(statement) && !statement.StartsWith('-'))
             {
-                if (!string.IsNullOrEmpty(statement) && !statement.StartsWith('-'))
-                {
-                    var command = new SQLiteCommand(statement, connection);
-                    command.ExecuteNonQuery();
-                }
+                var command = new SQLiteCommand(statement, connection);
+                command.ExecuteNonQuery();
             }
         }
     }
@@ -62,23 +63,21 @@ public partial class SqLiteHelper
     {
         var result = false;
 
-        using (var connection = GetConnection())
+        using var connection = GetConnection();
+        var stringBuilder = new StringBuilder();
+
+        stringBuilder.AppendLine("SELECT sql");
+        stringBuilder.AppendLine("FROM sqlite_master");
+        stringBuilder.AppendLine($"WHERE type='table' AND name='{tableName}'");
+
+        var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+        var reader = command.ExecuteReader();
+        if (reader.HasRows)
         {
-            var stringBuilder = new StringBuilder();
-
-            stringBuilder.AppendLine("SELECT sql");
-            stringBuilder.AppendLine("FROM sqlite_master");
-            stringBuilder.AppendLine($"WHERE type='table' AND name='{tableName}'");
-
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
-            var reader = command.ExecuteReader();
-            if (reader.HasRows)
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    var sql = FieldAsString(reader["sql"]);
-                    result = sql.Contains(columnName);
-                }
+                var sql = FieldAsString(reader["sql"]);
+                result = sql.Contains(columnName);
             }
         }
 
@@ -119,14 +118,18 @@ public partial class SqLiteHelper
     private int FieldAsInt(object field)
     {
         var temp = $"{field}";
+        return string.IsNullOrEmpty(temp) ? 0 : int.Parse(temp);
+    }
+
+    private DateTime FieldAsTime(object field)
+    {
+        var temp = $"{field}";
         if (string.IsNullOrEmpty(temp))
         {
-            return 0;
+            return DateTime.MaxValue;
         }
-        else
-        {
-            return int.Parse(temp);
-        }
+
+        return DateTime.ParseExact(temp, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
     }
 
     private double FieldAsDouble(object field)
@@ -136,9 +139,73 @@ public partial class SqLiteHelper
         {
             return 0;
         }
-        else
+
+        return double.Parse(temp);
+    }
+
+    public List<MySummary> GetUsageInformation()
+    {
+        var result = new List<MySummary>();
+
+        using (var connection = GetConnection())
         {
-            return double.Parse(temp);
+            // Electric first
+            GetHalfHourlyUsageMetric(connection, StringHelper.ProperCase(Constants.Electric));
+            // Then Gas
+            GetHalfHourlyUsageMetric(connection, StringHelper.ProperCase(Constants.Gas));
+        }
+
+        return result;
+
+        // Local Functions
+
+        void GetHalfHourlyUsageMetric(SQLiteConnection connection, string fuelType)
+        {
+            var stringBuilder = new StringBuilder();
+
+            stringBuilder.AppendLine("SELECT MAX(StartTime) AS Max, MIN(StartTime) AS Min, Count(1) AS Count");
+            stringBuilder.AppendLine($"FROM HalfHourly{fuelType}");
+
+            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            var reader = command.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    ExtractMetric(reader, "Half Hourly", fuelType);
+                }
+            }
+        }
+
+        void ExtractMetric(SQLiteDataReader reader, string metric, string fuelType)
+        {
+            var from = FieldAsString(reader["Min"]);
+            var to = FieldAsString(reader["Max"]);
+            var count = FieldAsInt(reader["count"]);
+
+            if (from.Length > 16)
+            {
+                from = from.Substring(0, 16);
+            }
+            if (to.Length > 16)
+            {
+                to = to.Substring(0, 16);
+            }
+
+            if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
+            {
+                var info = new MySummary
+                {
+                    FuelType = StringHelper.ProperCase(fuelType),
+                    Metric = metric,
+                    From = from,
+                    To = to,
+                    Records = $"{count:#,##0}"
+                };
+
+                result.Add(info);
+            }
         }
     }
+
 }

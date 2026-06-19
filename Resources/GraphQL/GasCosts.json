@@ -1,0 +1,19 @@
+{
+  "operationName": "getMeasurements",
+  "variables": {
+    "accountNumber": "A-D2C77818",
+    "first": 100,
+    "startAt": "2026-02-01T00:00:00.000Z",
+    "endAt": "2026-02-02T00:00:00.000Z",
+    "timezone": "Europe/London",
+    "utilityFilters": [
+      {
+        "gasFilters": {
+          "readingFrequencyType": "RAW_INTERVAL",
+          "marketSupplyPointId": "2191447306"
+        }
+      }
+    ]
+  },
+  "query": "[[query]]"
+}
