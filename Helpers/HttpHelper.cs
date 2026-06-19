@@ -57,7 +57,10 @@ namespace OctopusData.Helpers
 
             var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ElectricCosts.query").Split(Environment.NewLine));
             var graphQl = ResourceHelper.GetStringResource("GraphQL.ElectricCosts.json");
-            graphQl = graphQl.Replace("[[customerGuid]]", "").Replace("[[query]]", query);
+            graphQl = graphQl
+                .Replace("[[Account-Number]]", account.Id)
+                .Replace("[[Electric-Supply-Point]]", account.ElectricMpan)
+                .Replace("[[query]]", query);
 
             Costs costs = await PostWithRedirect<Costs>(requestUri, graphQl);
 
@@ -70,7 +73,10 @@ namespace OctopusData.Helpers
 
             var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.GasCosts.query").Split(Environment.NewLine));
             var graphQl = ResourceHelper.GetStringResource("GraphQL.GasCosts.json");
-            graphQl = graphQl.Replace("[[customerGuid]]", "").Replace("[[query]]", query);
+            graphQl = graphQl
+                .Replace("[[Account-Number]]", account.Id)
+                .Replace("[[Gas-Supply-Point]]", account.GasMprn)
+                .Replace("[[query]]", query);
 
             Costs costs = await PostWithRedirect<Costs>(requestUri, graphQl);
 
