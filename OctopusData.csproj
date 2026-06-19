@@ -14,6 +14,9 @@
 
   <ItemGroup>
     <None Remove="AppSettings.json" />
+    <None Remove="Resources\GraphQL\ElectricCosts.json" />
+    <None Remove="Resources\GraphQL\GasCosts.json" />
+    <None Remove="Resources\GraphQL\ObtainKrakenToken.json" />
     <None Remove="Resources\SqLite\Initial-Database.sql" />
   </ItemGroup>
 
@@ -28,6 +31,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\GraphQL\ElectricCosts.json" />
+    <EmbeddedResource Include="Resources\GraphQL\GasCosts.json" />
+    <EmbeddedResource Include="Resources\GraphQL\GasCosts.query" />
+    <EmbeddedResource Include="Resources\GraphQL\ElectricCosts.query" />
+    <EmbeddedResource Include="Resources\GraphQL\ObtainKrakenToken.json" />
     <EmbeddedResource Include="Resources\SqLite\Initial-Database.sql" />
   </ItemGroup>
 
@@ -36,10 +44,6 @@
     <PackageReference Include="SQLite" Version="3.13.0" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.119" />
     <PackageReference Include="System.Text.Json" Version="10.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Resources\GraphQL\" />
   </ItemGroup>
 
 </Project>

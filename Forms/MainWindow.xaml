@@ -183,15 +183,15 @@
                 Get Usage
             </Button>
             <Button
-                x:Name="ReadMeterReadings"
+                x:Name="ReadCosts"
                 Grid.Row="1"
                 Grid.Column="1"
                 Margin="1"
                 VerticalAlignment="Center"
-                Click="OnClick_ReadMeterReadings"
+                Click="OnClick_GetCosts"
                 IsEnabled="False"
-                ToolTip="Get Meter Readings for selected account">
-                Get Readings
+                ToolTip="Get Costs for selected account">
+                Get Costs
             </Button>
             <Button
                 x:Name="ExportUsage"

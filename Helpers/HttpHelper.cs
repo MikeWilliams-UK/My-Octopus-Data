@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using OctopusData.Models;
 using OctopusData.Models.Account;
+using OctopusData.Models.Cost;
 using OctopusData.Models.Usage;
 using System.Net;
 using System.Net.Http;
@@ -17,6 +18,8 @@ namespace OctopusData.Helpers
 
         private readonly string _accountId;
         private readonly string _apiKey;
+
+        private string? _krakenToken;
 
         // HttpClient without auto-redirect
         private static readonly HttpClient Client = new(
@@ -42,10 +45,36 @@ namespace OctopusData.Helpers
             {
                 var requestUri = string.Format(uri, _accountId);
 
-                return await SendWithRedirect<Details>(requestUri);
+                return await GetWithRedirect<Details>(requestUri);
             }
 
             return null;
+        }
+
+        public async Task<Costs> ObtainElectricHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
+        {
+            string requestUri = "https://api.octopus.energy/v1/graphql/";
+
+            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ElectricCosts.query").Split(Environment.NewLine));
+            var graphQl = ResourceHelper.GetStringResource("GraphQL.ElectricCosts.json");
+            graphQl = graphQl.Replace("[[customerGuid]]", "").Replace("[[query]]", query);
+
+            Costs costs = await PostWithRedirect<Costs>(requestUri, graphQl);
+
+            return costs;
+        }
+
+        public async Task<Costs> ObtainGasHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
+        {
+            string requestUri = "https://api.octopus.energy/v1/graphql/";
+
+            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.GasCosts.query").Split(Environment.NewLine));
+            var graphQl = ResourceHelper.GetStringResource("GraphQL.GasCosts.json");
+            graphQl = graphQl.Replace("[[customerGuid]]", "").Replace("[[query]]", query);
+
+            Costs costs = await PostWithRedirect<Costs>(requestUri, graphQl);
+
+            return costs;
         }
 
         public async Task<Usage?> ObtainElectricHalfHourlyUsageAsync(OctopusAccount account, DateTime currentDate)
@@ -59,7 +88,7 @@ namespace OctopusData.Helpers
                     account.ElectricMeterSerial,
                     currentDate.ToString("yyyy-MM-dd"));
 
-                return await SendWithRedirect<Usage>(requestUri);
+                return await GetWithRedirect<Usage>(requestUri);
             }
 
             return null;
@@ -76,12 +105,12 @@ namespace OctopusData.Helpers
                     account.GasMeterSerial,
                     currentDate.ToString("yyyy-MM-dd"));
 
-                return await SendWithRedirect<Usage>(requestUri);
+                return await GetWithRedirect<Usage>(requestUri);
             }
             return null;
         }
 
-        private async Task<T?> SendWithRedirect<T>(string requestUri)
+        private async Task<T?> GetWithRedirect<T>(string requestUri)
         {
             try
             {
@@ -106,6 +135,83 @@ namespace OctopusData.Helpers
                         }
 
                         using var followUp = new HttpRequestMessage(HttpMethod.Get, redirectUri);
+                        followUp.Headers.Authorization = new AuthenticationHeaderValue("Basic", EncodeCredentials());
+                        followUp.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                        response = await Client.SendAsync(followUp);
+                    }
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine($"Status: {(int)response.StatusCode} {response.ReasonPhrase}");
+                Console.WriteLine("Response body:");
+                Console.WriteLine(responseContent);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger?.WriteLine($"{response.StatusCode} {response.ReasonPhrase}");
+                    _logger?.WriteLine(responseContent);
+                    return default;
+                }
+
+                return JsonSerializer.Deserialize<T>(responseContent);
+            }
+            catch (Exception ex)
+            {
+                _logger?.WriteLine(ex.ToString());
+                return default;
+            }
+        }
+
+        private async Task<string> FetchKrakenToken(string requestUri)
+        {
+            var graphQl = ResourceHelper.GetStringResource("GraphQL.ObtainKrakenToken.json");
+            graphQl = graphQl.Replace("[[API-Key]]", _apiKey);
+
+            KrakenResponse? reposnse  = await PostWithRedirect<KrakenResponse>(requestUri, graphQl);
+
+            string token = reposnse?.data.obtainKrakenToken.token;
+
+            return token;
+        }
+
+        private async Task<T?> PostWithRedirect<T>(string requestUri, string body)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(_krakenToken) && !body.Contains("ObtainJSONWebTokenInput"))
+                {
+                    _krakenToken = await FetchKrakenToken(requestUri);
+                }
+
+                using var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+                if (!string.IsNullOrEmpty(_krakenToken))
+                {
+                    request.Headers.Add("Authorization", $"Bearer {_krakenToken}");
+                }
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var content = new StringContent(body, null, "application/json");
+                request.Content = content;
+
+                var response = await Client.SendAsync(request);
+
+                // Handle redirect manually
+                if (response.StatusCode == HttpStatusCode.MovedPermanently
+                    || response.StatusCode == HttpStatusCode.Redirect
+                    || response.StatusCode == HttpStatusCode.TemporaryRedirect)
+                {
+                    var redirectUri = response.Headers.Location;
+                    if (redirectUri != null)
+                    {
+                        // If relative, combine with original request URI
+                        if (!redirectUri.IsAbsoluteUri)
+                        {
+                            redirectUri = new Uri(new Uri(requestUri), redirectUri);
+                        }
+
+                        using var followUp = new HttpRequestMessage(HttpMethod.Post, redirectUri);
                         followUp.Headers.Authorization = new AuthenticationHeaderValue("Basic", EncodeCredentials());
                         followUp.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 

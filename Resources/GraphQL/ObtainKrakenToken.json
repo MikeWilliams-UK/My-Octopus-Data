@@ -1,0 +1,8 @@
+{
+  "query": "mutation ($input: ObtainJSONWebTokenInput!) { obtainKrakenToken(input: $input) { token refreshToken payload refreshExpiresIn } }",
+  "variables": {
+    "input": {
+      "APIKey": "[[API-Key]]"
+    }
+  }
+}
