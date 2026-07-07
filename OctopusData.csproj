@@ -31,6 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\GraphQL\ChargeHistory.json" />
+    <EmbeddedResource Include="Resources\GraphQL\ChargeHistory.query" />
+    <EmbeddedResource Include="Resources\GraphQL\ChargeDevices.json" />
+    <EmbeddedResource Include="Resources\GraphQL\ChargeDevices.query" />
     <EmbeddedResource Include="Resources\GraphQL\ElectricCosts.json" />
     <EmbeddedResource Include="Resources\GraphQL\GasCosts.json" />
     <EmbeddedResource Include="Resources\GraphQL\GasCosts.query" />

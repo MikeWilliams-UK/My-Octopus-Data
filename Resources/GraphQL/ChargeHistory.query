@@ -1,0 +1,95 @@
+﻿query getChargeHistory(
+  $accountNumber: String!,
+  $after: DateTime!,
+  $cursor: DateTime,
+  $sessionTypes: [ChargingSessionType!],
+  $numberOfSessions: Int!,
+  $deviceId: String
+) {
+  devices(accountNumber: $accountNumber, deviceId: $deviceId) {
+    ... on SmartFlexVehicle {
+      chargingSessions(
+        last: $numberOfSessions
+        before: $cursor
+        after: $after
+        sessionTypes: $sessionTypes
+      ) {
+        edges {
+          cursor
+          node {
+            start
+            end
+            energyAdded {
+              value
+              unit
+            }
+            cost {
+              amount
+              currency
+            }
+            ... on SmartFlexChargingSession {
+              type
+              problems {
+                ... on SmartFlexChargingError {
+                  cause
+                }
+                ... on SmartFlexChargingTruncation {
+                  truncationCause
+                }
+              }
+            }
+            ... on PublicChargingSession {
+              location
+            }
+          }
+        }
+        pageInfo {
+          hasPreviousPage
+          startCursor
+        }
+      }
+    }
+    ... on SmartFlexChargePoint {
+      chargingSessions(
+        last: $numberOfSessions
+        before: $cursor
+        after: $after
+        sessionTypes: $sessionTypes
+      ) {
+        edges {
+          cursor
+          node {
+            start
+            end
+            energyAdded {
+              value
+              unit
+            }
+            cost {
+              amount
+              currency
+            }
+            ... on SmartFlexChargingSession {
+              type
+              problems {
+                ... on SmartFlexChargingError {
+                  cause
+                }
+                ... on SmartFlexChargingTruncation {
+                  truncationCause
+                }
+              }
+            }
+            ... on PublicChargingSession {
+              location
+            }
+          }
+        }
+        pageInfo {
+          hasPreviousPage
+          startCursor
+        }
+      }
+    }
+  }
+}

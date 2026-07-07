@@ -1,0 +1,54 @@
+﻿query getSingleChargingSessionOfEachChargingType(
+  $accountNumber: String!,
+  $after: DateTime!,
+  $propertiesActiveFrom: DateTime!
+) {
+devices(accountNumber: $accountNumber) {
+    id
+    name
+    propertyId
+    ... on SmartFlexVehicle {
+      publicSession: chargingSessions(last: 1, after: $after, sessionTypes: [PUBLIC]) {
+        edges {
+          cursor
+        }
+      }
+      boostSession: chargingSessions(last: 1, after: $after, sessionTypes: [BOOST]) {
+        edges {
+          cursor
+        }
+      }
+      smartSession: chargingSessions(last: 1, after: $after, sessionTypes: [SMART]) {
+        edges {
+          cursor
+        }
+      }
+    }
+    ... on SmartFlexChargePoint {
+      publicSession: chargingSessions(last: 1, after: $after, sessionTypes: [PUBLIC]) {
+        edges {
+          cursor
+        }
+      }
+      boostSession: chargingSessions(last: 1, after: $after, sessionTypes: [BOOST]) {
+        edges {
+          cursor
+        }
+      }
+      smartSession: chargingSessions(last: 1, after: $after, sessionTypes: [SMART]) {
+        edges {
+          cursor
+        }
+      }
+    }
+    status {
+      current
+    }
+  }
+  account(accountNumber: $accountNumber) {
+    properties(activeFrom: $propertiesActiveFrom) {
+      id
+      address
+    }
+  }
+}

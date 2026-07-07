@@ -9,3 +9,8 @@ https://json2csharp.com/
 
 Database folder
 C:\ProgramData\OctopusData
+
+Useful web site for converting captured json to GraphQL
+-------------------------------------------------------
+https://developer.octopus.energy/guides/graphql/
+https://api.octopus.energy/v1/graphql/

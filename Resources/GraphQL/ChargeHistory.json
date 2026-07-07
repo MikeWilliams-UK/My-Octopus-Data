@@ -1,0 +1,16 @@
+{
+  "operationName": "getChargeHistory",
+  "variables": {
+    "accountNumber": "[[Account-Number]]",
+    "after": "[[StartOfMonth]]",
+    "cursor": "[[StartOfNextMonth@235959]]",
+    "numberOfSessions": 100,
+    "sessionTypes": [
+      "BOOST",
+      "PUBLIC",
+      "SMART"
+    ],
+    "deviceId": "[[Device-Id]]"
+  },
+  "query": "[[query]]"
+}

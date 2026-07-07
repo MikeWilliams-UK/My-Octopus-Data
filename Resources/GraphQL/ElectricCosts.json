@@ -3,8 +3,8 @@
   "variables": {
     "accountNumber": "[[Account-Number]]",
     "first": 100,
-    "startAt": "2026-02-01T00:00:00.000Z",
-    "endAt": "2026-02-02T00:00:00.000Z",
+    "startAt": "[[StartOfMonth]]",
+    "endAt": "[[EndOfMonth]]",
     "timezone": "Europe/London",
     "utilityFilters": [
       {
