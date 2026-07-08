@@ -57,8 +57,11 @@ namespace OctopusData.Helpers
 
             var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ElectricCosts.query").Split(Environment.NewLine));
             var graphQl = ResourceHelper.GetStringResource("GraphQL.ElectricCosts.json");
+            
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
+                .Replace("[[StartOfThisPeriod]]", DateHelper.StartOfToday(currentDate))
+                .Replace("[[StartOfNextPeriod]]", DateHelper.StartOfTomorrow(currentDate))
                 .Replace("[[Electric-Supply-Point]]", account.ElectricMpan)
                 .Replace("[[query]]", query);
 
@@ -75,6 +78,8 @@ namespace OctopusData.Helpers
             var graphQl = ResourceHelper.GetStringResource("GraphQL.GasCosts.json");
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
+                .Replace("[[StartOfThisPeriod]]", DateHelper.StartOfToday(currentDate))
+                .Replace("[[StartOfNextPeriod]]", DateHelper.StartOfTomorrow(currentDate))
                 .Replace("[[Gas-Supply-Point]]", account.GasMprn)
                 .Replace("[[query]]", query);
 

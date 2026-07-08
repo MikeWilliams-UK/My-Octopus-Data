@@ -1,6 +1,6 @@
 {
   "operationName": "getPropertiesWithChargingSessions",
-  {
+  "variables": {
     "accountNumber": "[[Account-Number]]",
     "after": "[[StartOfMonth]]",
     "propertiesActiveFrom": "[[GoLive-Date]]"

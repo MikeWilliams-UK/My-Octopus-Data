@@ -2,9 +2,9 @@
   "operationName": "getMeasurements",
   "variables": {
     "accountNumber": "[[Account-Number]]",
-    "first": 100,
-    "startAt": "[[StartOfMonth]]",
-    "endAt": "[[EndOfMonth]]",
+    "first": 1500,
+    "startAt": "[[StartOfThisPeriod]]",
+    "endAt": "[[StartOfNextPeriod]]",
     "timezone": "Europe/London",
     "utilityFilters": [
       {

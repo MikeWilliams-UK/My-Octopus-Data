@@ -205,6 +205,8 @@ namespace OctopusData.Forms
             Debug.WriteLine(electric.Data.Account.Properties[0].Measurements.Edges.Count);
             var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
             Debug.WriteLine(gas.Data.Account.Properties[0].Measurements.Edges.Count);
+
+            return;
         }
 
         private async void OnClick_ReadUsageAsync(object sender, RoutedEventArgs e)
