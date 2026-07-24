@@ -1,9 +1,8 @@
-﻿using System.Collections;
+﻿using OctopusData.Models;
 using System.Data.SQLite;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using OctopusData.Models;
 
 namespace OctopusData.Helpers;
 
@@ -207,5 +206,4 @@ public partial class SqLiteHelper
             }
         }
     }
-
 }

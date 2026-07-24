@@ -2,6 +2,7 @@
 using OctopusData.Models;
 using OctopusData.Models.Account;
 using OctopusData.Models.Charging.Devices;
+using OctopusData.Models.Charging.Sessions;
 using OctopusData.Models.Cost;
 using OctopusData.Models.Usage;
 using System.Net;
@@ -9,7 +10,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using OctopusData.Models.Charging.Sessions;
 
 namespace OctopusData.Helpers
 {

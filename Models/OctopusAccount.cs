@@ -8,5 +8,4 @@ public class OctopusAccount
     public string ElectricMeterSerial { get; set; } = string.Empty;
     public string GasMprn { get; set; } = string.Empty;
     public string GasMeterSerial { get; set; } = string.Empty;
-
 }

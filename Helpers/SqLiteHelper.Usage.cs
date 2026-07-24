@@ -1,6 +1,6 @@
-﻿using System.Data.SQLite;
+﻿using OctopusData.Models;
+using System.Data.SQLite;
 using System.Text;
-using OctopusData.Models;
 
 namespace OctopusData.Helpers;
 
@@ -76,7 +76,7 @@ public partial class SqLiteHelper
                         var dto = new OctopusHalfHourly
                         {
                             Consumption = FieldAsDouble(reader["Consumption"]),
-                            Interval = new OctopusInterval(){Start = FieldAsTime(reader["StartTime"]) }
+                            Interval = new OctopusInterval() { Start = FieldAsTime(reader["StartTime"]) }
                         };
                         result.Add(dto);
                     }

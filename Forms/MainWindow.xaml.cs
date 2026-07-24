@@ -4,6 +4,7 @@ using OctopusData.Helpers;
 using OctopusData.Models;
 using OctopusData.Models.Account;
 using OctopusData.Models.Charging.Devices;
+using OctopusData.Models.Charging.Sessions;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -11,7 +12,6 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using OctopusData.Models.Charging.Sessions;
 using Device = OctopusData.Models.Charging.Devices.Device;
 using Edge = OctopusData.Models.Charging.Sessions.Edge;
 
