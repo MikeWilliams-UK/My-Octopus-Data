@@ -207,7 +207,8 @@ namespace OctopusData.Forms
             var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
             Debug.WriteLine(gas.Data.Account.Properties[0].Measurements.Edges.Count);
 
-            var devices = await _httpHelper.ObtainChargeDevicesAsync(_account, day, _account.MovedIn);
+            var chargers = await _httpHelper.ObtainChargersAsync(_account, day, _account.MovedIn);
+            var chargeHistory = await _httpHelper.ObtainChargeHistoryAsync(_account, day, chargers.Data.Devices[0].Id);
 
             return;
         }

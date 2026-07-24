@@ -2,7 +2,7 @@
 
 namespace OctopusData.Models.Charging.Devices;
 
-public class AllDevices
+public class Chargers
 {
     [JsonPropertyName("data")]
     public Data Data { get; set; }

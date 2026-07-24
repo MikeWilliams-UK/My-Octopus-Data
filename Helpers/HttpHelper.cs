@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using OctopusData.Models;
 using OctopusData.Models.Account;
+using OctopusData.Models.Charging.Devices;
 using OctopusData.Models.Cost;
 using OctopusData.Models.Usage;
 using System.Net;
@@ -8,7 +9,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using OctopusData.Models.Charging.Devices;
+using OctopusData.Models.Charging.Sessions;
 
 namespace OctopusData.Helpers
 {
@@ -58,7 +59,7 @@ namespace OctopusData.Helpers
 
             var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ElectricCosts.query").Split(Environment.NewLine));
             var graphQl = ResourceHelper.GetStringResource("GraphQL.ElectricCosts.json");
-            
+
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
                 .Replace("[[StartOfThisPeriod]]", DateHelper.StartOfToday(currentDate))
@@ -89,21 +90,39 @@ namespace OctopusData.Helpers
             return costs;
         }
 
-        public async Task<AllDevices> ObtainChargeDevicesAsync(OctopusAccount account, DateTime currentDate, DateTime goLive)
+        public async Task<Chargers> ObtainChargersAsync(OctopusAccount account, DateTime currentDate, DateTime goLive)
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
-            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ChargeDevices.query").Split(Environment.NewLine));
-            var graphQl = ResourceHelper.GetStringResource("GraphQL.ChargeDevices.json");
+            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.Chargers.query").Split(Environment.NewLine));
+            var graphQl = ResourceHelper.GetStringResource("GraphQL.Chargers.json");
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
                 .Replace("[[StartOfMonth]]", DateHelper.FirstDayOfThisMonth(currentDate))
                 .Replace("[[GoLive-Date]]", DateHelper.IsoDateTime(goLive))
                 .Replace("[[query]]", query);
 
-            AllDevices devices = await PostWithRedirect<AllDevices>(requestUri, graphQl);
+            Chargers devices = await PostWithRedirect<Chargers>(requestUri, graphQl);
 
             return devices;
+        }
+
+        public async Task<ChargeHistrory> ObtainChargeHistoryAsync(OctopusAccount account, DateTime currentDate, string chargerId)
+        {
+            string requestUri = "https://api.octopus.energy/v1/graphql/";
+
+            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ChargeHistory.query").Split(Environment.NewLine));
+            var graphQl = ResourceHelper.GetStringResource("GraphQL.ChargeHistory.json");
+            graphQl = graphQl
+                .Replace("[[Account-Number]]", account.Id)
+                .Replace("[[StartOfMonth]]", DateHelper.FirstDayOfThisMonth(currentDate))
+                .Replace("[[StartOfNextMonth]]", DateHelper.FirstDayOfNextMonth(currentDate))
+                .Replace("[[Device-Id]]", chargerId)
+                .Replace("[[query]]", query);
+
+            ChargeHistrory history = await PostWithRedirect<ChargeHistrory>(requestUri, graphQl);
+
+            return history;
         }
 
         public async Task<Usage?> ObtainElectricHalfHourlyUsageAsync(OctopusAccount account, DateTime currentDate)
@@ -198,7 +217,7 @@ namespace OctopusData.Helpers
             var graphQl = ResourceHelper.GetStringResource("GraphQL.ObtainKrakenToken.json");
             graphQl = graphQl.Replace("[[API-Key]]", _apiKey);
 
-            KrakenResponse? reposnse  = await PostWithRedirect<KrakenResponse>(requestUri, graphQl);
+            KrakenResponse? reposnse = await PostWithRedirect<KrakenResponse>(requestUri, graphQl);
 
             string token = reposnse?.Data.ObtainKrakenToken.Token;
 
