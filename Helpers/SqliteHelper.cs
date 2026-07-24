@@ -152,29 +152,13 @@ public partial class SqLiteHelper
             GetHalfHourlyUsageMetric(connection, StringHelper.ProperCase(Constants.Electric));
             // Then Gas
             GetHalfHourlyUsageMetric(connection, StringHelper.ProperCase(Constants.Gas));
+
+            GetChargeUsageMetric(connection, StringHelper.ProperCase(Constants.Electric));
         }
 
         return result;
 
         // Local Functions
-
-        void GetHalfHourlyUsageMetric(SQLiteConnection connection, string fuelType)
-        {
-            var stringBuilder = new StringBuilder();
-
-            stringBuilder.AppendLine("SELECT MAX(StartTime) AS Max, MIN(StartTime) AS Min, Count(1) AS Count");
-            stringBuilder.AppendLine($"FROM HalfHourly{fuelType}");
-
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
-            var reader = command.ExecuteReader();
-            if (reader.HasRows)
-            {
-                while (reader.Read())
-                {
-                    ExtractMetric(reader, "Half Hourly", fuelType);
-                }
-            }
-        }
 
         void ExtractMetric(SQLiteDataReader reader, string metric, string fuelType)
         {
@@ -204,6 +188,43 @@ public partial class SqLiteHelper
 
                 result.Add(info);
             }
+        }
+
+        void GetHalfHourlyUsageMetric(SQLiteConnection connection, string fuelType)
+        {
+            var stringBuilder = new StringBuilder();
+
+            stringBuilder.AppendLine("SELECT MAX(StartTime) AS Max, MIN(StartTime) AS Min, Count(1) AS Count");
+            stringBuilder.AppendLine($"FROM HalfHourly{fuelType}");
+
+            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            var reader = command.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    ExtractMetric(reader, "Half Hourly", fuelType);
+                }
+            }
+        }
+
+        void GetChargeUsageMetric(SQLiteConnection connection, string fuelType)
+        {
+            var stringBuilder = new StringBuilder();
+
+            stringBuilder.AppendLine("SELECT MAX(StartTime) AS Max, MIN(StartTime) AS Min, Count(1) AS Count");
+            stringBuilder.AppendLine("FROM ChargeEvents");
+
+            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            var reader = command.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    ExtractMetric(reader, "Charge Events", fuelType);
+                }
+            }
+
         }
     }
 }

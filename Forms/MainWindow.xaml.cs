@@ -220,69 +220,108 @@ namespace OctopusData.Forms
 
         private async void OnClick_ChargingSessions(object sender, RoutedEventArgs e)
         {
-            var day = new DateTime(2026, 02, 01, 0, 0, 0, DateTimeKind.Local);
+            SqLiteHelper sqLiteHelper = new SqLiteHelper(_account.Id, _logger);
 
-            Chargers chargers = await _httpHelper.ObtainChargersAsync(_account, day, _account.MovedIn);
-            List<OctopusCharger> octopusChargers = new List<OctopusCharger>();
-            foreach (Device device in chargers.Data.Devices)
+            SetMouseCursor();
+            SetStateOfControls(false);
+
+            try
             {
-                OctopusCharger charger = new OctopusCharger
+                var today = DateTime.Today;
+
+                var day = new DateTime(today.Year, today.Month, 01, 0, 0, 0, DateTimeKind.Local);
+
+                while (day > _account.MovedIn)
                 {
-                    Id = device.Id,
-                    Name = device.Name
-                };
+                    SetStatusText($"Fetching Charge History for {day:yyyy-MM}");
 
-                if (device.PublicSession.Edges.Any())
-                {
-                    charger.LastActive = device.PublicSession.Edges[0].Cursor;
-                }
-                if (device.BoostSession.Edges.Any())
-                {
-                    charger.LastActive = device.BoostSession.Edges[0].Cursor;
-                }
-                if (device.SmartSession.Edges.Any())
-                {
-                    charger.LastActive = device.SmartSession.Edges[0].Cursor;
-                }
-
-                charger.Status = device.Status.Current;
-
-                octopusChargers.Add(charger);
-            }
-
-            List<OctopusChargeEvent> octopusChargeEvents = new List<OctopusChargeEvent>();
-
-            foreach (OctopusCharger charger in octopusChargers)
-            {
-                ChargeHistrory chargeHistory = await _httpHelper.ObtainChargeHistoryAsync(_account, day, charger.Id);
-
-                foreach (Edge edge in chargeHistory.Data.Devices[0].ChargingSessions.Edges)
-                {
-                    OctopusChargeEvent octopusChargeEvent = new OctopusChargeEvent
+                    Chargers chargers = await _httpHelper.ObtainChargersAsync(_account, day, _account.MovedIn);
+                    List<OctopusCharger> octopusChargers = new List<OctopusCharger>();
+                    foreach (Device device in chargers.Data.Devices)
                     {
-                        ChargerId = charger.Id,
-                        StartTime = edge.Node.Start,
-                        EndTime = edge.Node.End,
-                        EnergyAdded = double.Parse(edge.Node.EnergyAdded.Value)
-                    };
-
-                    if (edge.Node.Problems.Any())
-                    {
-                        StringBuilder stringBuilder = new StringBuilder();
-                        foreach (Problem problem in edge.Node.Problems)
+                        OctopusCharger charger = new OctopusCharger
                         {
-                            stringBuilder.AppendLine(problem.Cause);
+                            Id = device.Id,
+                            Name = device.Name
+                        };
+
+                        if (device.PublicSession.Edges.Any())
+                        {
+                            charger.LastActive = device.PublicSession.Edges[0].Cursor;
                         }
-                        octopusChargeEvent.Problems = stringBuilder.ToString().Trim();
+                        if (device.BoostSession.Edges.Any())
+                        {
+                            charger.LastActive = device.BoostSession.Edges[0].Cursor;
+                        }
+                        if (device.SmartSession.Edges.Any())
+                        {
+                            charger.LastActive = device.SmartSession.Edges[0].Cursor;
+                        }
+
+                        charger.Status = device.Status.Current;
+
+                        octopusChargers.Add(charger);
                     }
 
-                    octopusChargeEvents.Add(octopusChargeEvent);
+                    List<OctopusChargeEvent> octopusChargeEvents = new List<OctopusChargeEvent>();
+
+                    foreach (OctopusCharger charger in octopusChargers)
+                    {
+                        ChargeHistrory chargeHistory = await _httpHelper.ObtainChargeHistoryAsync(_account, day, charger.Id);
+
+                        if (chargeHistory != null && chargeHistory.Data.Devices.Any())
+                        {
+                            foreach (Edge edge in chargeHistory.Data.Devices[0].ChargingSessions.Edges)
+                            {
+                                OctopusChargeEvent octopusChargeEvent = new OctopusChargeEvent
+                                {
+                                    ChargerId = charger.Id,
+                                    StartTime = edge.Node.Start,
+                                    EndTime = edge.Node.End,
+                                    EnergyAdded = double.Parse(edge.Node.EnergyAdded.Value),
+                                    TypeOfCharge = edge.Node.Type
+                                };
+
+                                if (edge.Node.Problems != null && edge.Node.Problems.Any())
+                                {
+                                    StringBuilder stringBuilder = new StringBuilder();
+                                    foreach (Problem problem in edge.Node.Problems)
+                                    {
+                                        stringBuilder.AppendLine(problem.Cause);
+                                    }
+                                    octopusChargeEvent.Problems = stringBuilder.ToString().Trim();
+                                }
+
+                                octopusChargeEvents.Add(octopusChargeEvent);
+                            }
+                        }
+                    }
+
+                    foreach (OctopusCharger charger in octopusChargers)
+                    {
+                        sqLiteHelper.UpsertCharger(charger);
+                    }
+
+                    foreach (OctopusChargeEvent chargeEvent in octopusChargeEvents)
+                    {
+                        sqLiteHelper.UpsertChargeEvent(chargeEvent);
+                    }
+
+                    day = day.AddMonths(-1);
                 }
+
+
             }
-
-            // ToDo: Save these to the database
-
-            return;
+            catch (Exception exception)
+            {
+                _logger.WriteLine(exception.ToString());
+                MessageBox.Show(exception.ToString(), "Exception");
+            }
+            finally
+            {
+                ClearDown();
+                ShowAccountInfo();
+            }
         }
 
         private async void OnClick_ReadUsageAsync(object sender, RoutedEventArgs e)

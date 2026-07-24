@@ -37,7 +37,7 @@ public partial class SqLiteHelper
             {
                 var stringBuilder = new StringBuilder();
 
-                var timeStamp = item.Interval.Start.ToString("yyyy-MM-dd HH:mm:ss");
+                var timeStamp = DateHelper.SortableTimeAndTime(item.Interval.Start);
 
                 stringBuilder.AppendLine($"INSERT INTO HalfHourly{fuelType}");
                 stringBuilder.AppendLine("VALUES");

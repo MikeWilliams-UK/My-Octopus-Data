@@ -2,14 +2,34 @@
 
 public static class DateHelper
 {
+    /// <summary>
+    /// yyyy-MM-dd
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
     public static string IsoDateOnly(DateTime value)
     {
         return $"{value:yyyy-MM-dd}";
     }
 
+    /// <summary>
+    /// yyyy-MM-ddTHH:mm:ss.fffZ
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
     public static string IsoDateTime(DateTime value)
     {
         return $"{value:yyyy-MM-ddTHH:mm:ss.fffZ}";
+    }
+
+    /// <summary>
+    /// yyyy-MM-dd HH:mm:ss
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static string SortableTimeAndTime(DateTime value)
+    {
+        return $"{value:yyyy-MM-dd HH:mm:ss}";
     }
 
     public static string LogFileSuffix()
