@@ -180,7 +180,7 @@
                 Click="OnClick_ReadUsageAsync"
                 IsEnabled="False"
                 ToolTip="Get Usage Data for selected account">
-                Get Usage
+                Usage
             </Button>
             <Button
                 x:Name="ReadCosts"
@@ -191,7 +191,7 @@
                 Click="OnClick_Costs"
                 IsEnabled="False"
                 ToolTip="Get Costs for selected account">
-                Get Costs
+                Costs
             </Button>
             <Button
                 x:Name="ChargingSessions"
@@ -201,8 +201,8 @@
                 VerticalAlignment="Center"
                 Click="OnClick_ChargingSessions"
                 IsEnabled="False"
-                ToolTip="Get EV Charging sessions for selected account">
-                Get EV Charging
+                ToolTip="Get EV Charging Events for selected account">
+                Charge Events
             </Button>
             <Button
                 x:Name="ExportUsage"

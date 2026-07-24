@@ -3,12 +3,17 @@ using Microsoft.Win32;
 using OctopusData.Helpers;
 using OctopusData.Models;
 using OctopusData.Models.Account;
+using OctopusData.Models.Charging.Devices;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using OctopusData.Models.Charging.Sessions;
+using Device = OctopusData.Models.Charging.Devices.Device;
+using Edge = OctopusData.Models.Charging.Sessions.Edge;
 
 namespace OctopusData.Forms
 {
@@ -208,6 +213,8 @@ namespace OctopusData.Forms
             var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
             Debug.WriteLine(gas.Data.Account.Properties[0].Measurements.Edges.Count);
 
+            // ToDo: Save these to the database
+
             return;
         }
 
@@ -215,8 +222,65 @@ namespace OctopusData.Forms
         {
             var day = new DateTime(2026, 02, 01, 0, 0, 0, DateTimeKind.Local);
 
-            var chargers = await _httpHelper.ObtainChargersAsync(_account, day, _account.MovedIn);
-            var chargeHistory = await _httpHelper.ObtainChargeHistoryAsync(_account, day, chargers.Data.Devices[0].Id);
+            Chargers chargers = await _httpHelper.ObtainChargersAsync(_account, day, _account.MovedIn);
+            List<OctopusCharger> octopusChargers = new List<OctopusCharger>();
+            foreach (Device device in chargers.Data.Devices)
+            {
+                OctopusCharger charger = new OctopusCharger
+                {
+                    Id = device.Id,
+                    Name = device.Name
+                };
+
+                if (device.PublicSession.Edges.Any())
+                {
+                    charger.LastActive = device.PublicSession.Edges[0].Cursor;
+                }
+                if (device.BoostSession.Edges.Any())
+                {
+                    charger.LastActive = device.BoostSession.Edges[0].Cursor;
+                }
+                if (device.SmartSession.Edges.Any())
+                {
+                    charger.LastActive = device.SmartSession.Edges[0].Cursor;
+                }
+
+                charger.Status = device.Status.Current;
+
+                octopusChargers.Add(charger);
+            }
+
+            List<OctopusChargeEvent> octopusChargeEvents = new List<OctopusChargeEvent>();
+
+            foreach (OctopusCharger charger in octopusChargers)
+            {
+                ChargeHistrory chargeHistory = await _httpHelper.ObtainChargeHistoryAsync(_account, day, charger.Id);
+
+                foreach (Edge edge in chargeHistory.Data.Devices[0].ChargingSessions.Edges)
+                {
+                    OctopusChargeEvent octopusChargeEvent = new OctopusChargeEvent
+                    {
+                        ChargerId = charger.Id,
+                        StartTime = edge.Node.Start,
+                        EndTime = edge.Node.End,
+                        EnergyAdded = double.Parse(edge.Node.EnergyAdded.Value)
+                    };
+
+                    if (edge.Node.Problems.Any())
+                    {
+                        StringBuilder stringBuilder = new StringBuilder();
+                        foreach (Problem problem in edge.Node.Problems)
+                        {
+                            stringBuilder.AppendLine(problem.Cause);
+                        }
+                        octopusChargeEvent.Problems = stringBuilder.ToString().Trim();
+                    }
+
+                    octopusChargeEvents.Add(octopusChargeEvent);
+                }
+            }
+
+            // ToDo: Save these to the database
 
             return;
         }
@@ -332,7 +396,6 @@ namespace OctopusData.Forms
             }
         }
 
-
         private void OnTextChanged_VisibleApiKey(object sender, TextChangedEventArgs e)
         {
             if (_isUpdating)
@@ -366,6 +429,7 @@ namespace OctopusData.Forms
             VisibleApiKey.Visibility = Visibility.Collapsed;
             ApiKey.Visibility = Visibility.Visible;
         }
+
         private void OnSelectionChanged_StopWhen(object sender, SelectionChangedEventArgs e)
         {
         }
