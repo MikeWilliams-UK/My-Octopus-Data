@@ -7,6 +7,11 @@ public static class DateHelper
         return $"{value:yyyy-MM-dd}";
     }
 
+    public static string IsoDateTime(DateTime value)
+    {
+        return $"{value:yyyy-MM-ddTHH:mm:ss.fffZ}";
+    }
+
     public static string LogFileSuffix()
     {
         return $"{DateTime.Now:yyyy-MM-dd HH-mm-ss.fff}";

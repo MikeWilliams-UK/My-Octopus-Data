@@ -85,6 +85,7 @@ namespace OctopusData.Forms
                     if (details.Properties.Count == 1)
                     {
                         var property = details.Properties[0];
+                        _account.MovedIn = property.MovedInAt;
                         var octopusProperty = new OctopusProperty
                         {
                             Id = property.Id
@@ -205,6 +206,8 @@ namespace OctopusData.Forms
             Debug.WriteLine(electric.Data.Account.Properties[0].Measurements.Edges.Count);
             var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
             Debug.WriteLine(gas.Data.Account.Properties[0].Measurements.Edges.Count);
+
+            var devices = await _httpHelper.ObtainChargeDevicesAsync(_account, day, _account.MovedIn);
 
             return;
         }

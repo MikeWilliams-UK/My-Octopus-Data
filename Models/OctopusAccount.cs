@@ -3,6 +3,7 @@
 public class OctopusAccount
 {
     public string Id { get; set; } = string.Empty;
+    public DateTime MovedIn { get; set; }
     public string ElectricMpan { get; set; } = string.Empty;
     public string ElectricMeterSerial { get; set; } = string.Empty;
     public string GasMprn { get; set; } = string.Empty;

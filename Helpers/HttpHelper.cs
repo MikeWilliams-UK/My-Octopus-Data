@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using OctopusData.Models.Charging.Devices;
 
 namespace OctopusData.Helpers
 {
@@ -86,6 +87,23 @@ namespace OctopusData.Helpers
             Costs costs = await PostWithRedirect<Costs>(requestUri, graphQl);
 
             return costs;
+        }
+
+        public async Task<AllDevices> ObtainChargeDevicesAsync(OctopusAccount account, DateTime currentDate, DateTime goLive)
+        {
+            string requestUri = "https://api.octopus.energy/v1/graphql/";
+
+            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ChargeDevices.query").Split(Environment.NewLine));
+            var graphQl = ResourceHelper.GetStringResource("GraphQL.ChargeDevices.json");
+            graphQl = graphQl
+                .Replace("[[Account-Number]]", account.Id)
+                .Replace("[[StartOfMonth]]", DateHelper.FirstDayOfThisMonth(currentDate))
+                .Replace("[[GoLive-Date]]", DateHelper.IsoDateTime(goLive))
+                .Replace("[[query]]", query);
+
+            AllDevices devices = await PostWithRedirect<AllDevices>(requestUri, graphQl);
+
+            return devices;
         }
 
         public async Task<Usage?> ObtainElectricHalfHourlyUsageAsync(OctopusAccount account, DateTime currentDate)

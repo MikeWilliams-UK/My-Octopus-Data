@@ -1,9 +1,9 @@
-﻿query getSingleChargingSessionOfEachChargingType(
+﻿query getPropertiesWithChargingSessions(
   $accountNumber: String!,
   $after: DateTime!,
   $propertiesActiveFrom: DateTime!
 ) {
-devices(accountNumber: $accountNumber) {
+  devices(accountNumber: $accountNumber) {
     id
     name
     propertyId
