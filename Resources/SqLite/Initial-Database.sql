@@ -19,3 +19,6 @@ CREATE INDEX Idx_HalfHourlyElectric ON HalfHourlyElectric (StartTime ASC);
 
 CREATE TABLE HalfHourlyGas (StartTime STRING PRIMARY KEY UNIQUE NOT NULL, Consumption DOUBLE);
 CREATE INDEX Idx_HalfHourlyGas ON HalfHourlyGas (StartTime ASC);
+
+CREATE TABLE Chargers (Id TEXT PRIMARY KEY NOT NULL,Name TEXT NOT NULL);
+CREATE TABLE ChargeEvents (ChargerId TEXT NOT NULL, Start TEXT NOT NULL, End NOT NULL, Added DOUBLE NOT NULL, Unit TEXT NOT NULL, Type TEXT NOT NULL, Problems  TEXT);

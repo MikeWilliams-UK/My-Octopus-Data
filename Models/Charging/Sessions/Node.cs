@@ -14,7 +14,7 @@ public class Node
     public EnergyAdded EnergyAdded { get; set; } = new();
 
     [JsonPropertyName("cost")]
-    public object Cost { get; set; } = new();
+    public Cost Cost { get; set; } = new();
 
     [JsonPropertyName("type")]
     public string Type { get; set; } = string.Empty;

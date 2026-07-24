@@ -14,3 +14,15 @@ Useful web site for converting captured json to GraphQL
 -------------------------------------------------------
 https://developer.octopus.energy/guides/graphql/
 https://api.octopus.energy/v1/graphql/
+
+Panels
+Top Left
+	Query
+		Copy from postman
+Bottom Left
+	Variables
+		Copy from Postman
+	Headers
+		{
+			"Authorization": "Bearer {{JWT From Postman}}"
+		}

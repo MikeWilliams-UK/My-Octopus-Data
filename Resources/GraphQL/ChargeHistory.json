@@ -3,7 +3,7 @@
   "variables": {
     "accountNumber": "[[Account-Number]]",
     "after": "[[StartOfMonth]]",
-    "cursor": "[[StartOfNextMonth]]",
+    "before": "[[StartOfNextMonth]]",
     "numberOfSessions": 100,
     "sessionTypes": [
       "BOOST",

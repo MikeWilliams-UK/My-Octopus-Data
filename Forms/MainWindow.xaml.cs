@@ -199,13 +199,21 @@ namespace OctopusData.Forms
             }
         }
 
-        private async void OnClick_GetCosts(object sender, RoutedEventArgs e)
+        private async void OnClick_Costs(object sender, RoutedEventArgs e)
         {
             var day = new DateTime(2026, 02, 01, 0, 0, 0, DateTimeKind.Local);
+
             var electric = await _httpHelper.ObtainElectricHalfHourlyCostsAsync(_account, day);
             Debug.WriteLine(electric.Data.Account.Properties[0].Measurements.Edges.Count);
             var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
             Debug.WriteLine(gas.Data.Account.Properties[0].Measurements.Edges.Count);
+
+            return;
+        }
+
+        private async void OnClick_ChargingSessions(object sender, RoutedEventArgs e)
+        {
+            var day = new DateTime(2026, 02, 01, 0, 0, 0, DateTimeKind.Local);
 
             var chargers = await _httpHelper.ObtainChargersAsync(_account, day, _account.MovedIn);
             var chargeHistory = await _httpHelper.ObtainChargeHistoryAsync(_account, day, chargers.Data.Devices[0].Id);
@@ -434,6 +442,7 @@ namespace OctopusData.Forms
             StopWhen.IsEnabled = state;
             ReadUsage.IsEnabled = state;
             ReadCosts.IsEnabled = state;
+            ChargingSessions.IsEnabled = state;
             ExportUsage.IsEnabled = state;
             CancelOperations.IsEnabled = !state;
         }

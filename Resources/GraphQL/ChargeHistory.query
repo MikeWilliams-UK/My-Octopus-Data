@@ -1,21 +1,20 @@
 ﻿query getChargeHistory(
   $accountNumber: String!,
   $after: DateTime!,
-  $cursor: DateTime,
-  $sessionTypes: [ChargingSessionType!],
-  $numberOfSessions: Int!,
-  $deviceId: String
-) {
+  $before: DateTime!, 
+  $sessionTypes: [ChargingSessionType!], 
+  $numberOfSessions: Int!, 
+  $deviceId: String)
+{
   devices(accountNumber: $accountNumber, deviceId: $deviceId) {
     ... on SmartFlexVehicle {
       chargingSessions(
         last: $numberOfSessions
-        before: $cursor
         after: $after
+        before: $before
         sessionTypes: $sessionTypes
       ) {
         edges {
-          cursor
           node {
             start
             end
@@ -52,12 +51,11 @@
     ... on SmartFlexChargePoint {
       chargingSessions(
         last: $numberOfSessions
-        before: $cursor
         after: $after
+        before: $before
         sessionTypes: $sessionTypes
       ) {
         edges {
-          cursor
           node {
             start
             end
