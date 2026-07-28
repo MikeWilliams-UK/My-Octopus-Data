@@ -53,7 +53,7 @@ namespace OctopusData.Helpers
             return null;
         }
 
-        public async Task<Costs> ObtainElectricHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
+        public async Task<Costs?> ObtainElectricHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
@@ -67,12 +67,12 @@ namespace OctopusData.Helpers
                 .Replace("[[Electric-Supply-Point]]", account.ElectricMpan)
                 .Replace("[[query]]", query);
 
-            Costs costs = await PostWithRedirect<Costs>(requestUri, graphQl);
+            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl);
 
             return costs;
         }
 
-        public async Task<Costs> ObtainGasHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
+        public async Task<Costs?> ObtainGasHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
@@ -85,12 +85,12 @@ namespace OctopusData.Helpers
                 .Replace("[[Gas-Supply-Point]]", account.GasMprn)
                 .Replace("[[query]]", query);
 
-            Costs costs = await PostWithRedirect<Costs>(requestUri, graphQl);
+            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl);
 
             return costs;
         }
 
-        public async Task<Chargers> ObtainChargersAsync(OctopusAccount account, DateTime currentDate, DateTime goLive)
+        public async Task<Chargers?> ObtainChargersAsync(OctopusAccount account, DateTime currentDate, DateTime goLive)
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
@@ -102,12 +102,12 @@ namespace OctopusData.Helpers
                 .Replace("[[GoLive-Date]]", DateHelper.IsoDateTime(goLive))
                 .Replace("[[query]]", query);
 
-            Chargers devices = await PostWithRedirect<Chargers>(requestUri, graphQl);
+            Chargers? devices = await PostWithRedirect<Chargers>(requestUri, graphQl);
 
             return devices;
         }
 
-        public async Task<ChargeHistrory> ObtainChargeHistoryAsync(OctopusAccount account, DateTime currentDate, string chargerId)
+        public async Task<ChargeHistory?> ObtainChargeHistoryAsync(OctopusAccount account, DateTime currentDate, string chargerId)
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
@@ -120,7 +120,7 @@ namespace OctopusData.Helpers
                 .Replace("[[Device-Id]]", chargerId)
                 .Replace("[[query]]", query);
 
-            ChargeHistrory history = await PostWithRedirect<ChargeHistrory>(requestUri, graphQl);
+            ChargeHistory? history = await PostWithRedirect<ChargeHistory>(requestUri, graphQl);
 
             return history;
         }
@@ -212,14 +212,14 @@ namespace OctopusData.Helpers
             }
         }
 
-        private async Task<string> FetchKrakenToken(string requestUri)
+        private async Task<string?> FetchKrakenToken(string requestUri)
         {
             var graphQl = ResourceHelper.GetStringResource("GraphQL.ObtainKrakenToken.json");
             graphQl = graphQl.Replace("[[API-Key]]", _apiKey);
 
-            KrakenResponse? reposnse = await PostWithRedirect<KrakenResponse>(requestUri, graphQl);
+            KrakenResponse? response = await PostWithRedirect<KrakenResponse>(requestUri, graphQl);
 
-            string token = reposnse?.Data.ObtainKrakenToken.Token;
+            string? token = response?.Data.ObtainKrakenToken.Token;
 
             return token;
         }

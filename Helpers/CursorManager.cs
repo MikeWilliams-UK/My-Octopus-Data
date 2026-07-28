@@ -5,7 +5,7 @@ namespace OctopusData.Helpers;
 
 public static class CursorManager
 {
-    private static Cursor _originalOverride;
+    private static Cursor? _originalOverride;
 
     public static void SetWaitCursorExcept(params UIElement[] exceptions)
     {

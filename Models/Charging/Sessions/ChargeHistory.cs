@@ -2,7 +2,7 @@
 
 namespace OctopusData.Models.Charging.Sessions;
 
-public class ChargeHistrory
+public class ChargeHistory
 {
     [JsonPropertyName("data")]
     public Data Data { get; set; } = new();

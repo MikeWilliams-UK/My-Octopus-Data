@@ -20,7 +20,7 @@ public class Node
     public string Type { get; set; } = string.Empty;
 
     [JsonPropertyName("problems")]
-    public List<Problem> Problems { get; set; } = new();
+    public List<Problem> Problems { get; set; } = [];
 
     [JsonPropertyName("stateOfChargeFinal")]
     public string StateOfChargeFinal { get; set; } = string.Empty;
