@@ -29,7 +29,7 @@ namespace OctopusData.Forms
 
         private string _stopWhen = string.Empty;
 
-        private HttpHelper? _httpHelper;
+        private HttpHelper? _httpHelper = null;
 
         private Logger? _logger;
         private int _logNumber;
@@ -206,22 +206,39 @@ namespace OctopusData.Forms
 
         private async void OnClick_Costs(object sender, RoutedEventArgs e)
         {
-            var day = new DateTime(2026, 02, 01, 0, 0, 0, DateTimeKind.Local);
-
-            var electric = await _httpHelper.ObtainElectricHalfHourlyCostsAsync(_account, day);
-            if (electric != null)
+            try
             {
-                Debug.WriteLine(electric.Data.Account.Properties[0].Measurements.Edges.Count);
+                SetMouseCursor();
+                SetStateOfControls(false);
+
+                var day = new DateTime(2026, 02, 01, 0, 0, 0, DateTimeKind.Local);
+
+                var electric = await _httpHelper.ObtainElectricHalfHourlyCostsAsync(_account, day);
+                if (electric != null)
+                {
+                    Debug.WriteLine(electric.Data.Account.Properties[0].Measurements.Edges.Count);
+                }
+
+                var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
+                if (gas != null)
+                {
+                    Debug.WriteLine(gas.Data.Account.Properties[0].Measurements.Edges.Count);
+                }
+
+                // ToDo: Save these to the database
+
+                return;
             }
-            var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
-            if (gas != null)
+            catch (Exception exception)
             {
-                Debug.WriteLine(gas.Data.Account.Properties[0].Measurements.Edges.Count);
+                _logger.WriteLine(exception.ToString());
+                MessageBox.Show(exception.ToString(), "Exception");
             }
-
-            // ToDo: Save these to the database
-
-            return;
+            finally
+            {
+                ClearDown();
+                ShowAccountInfo();
+            }
         }
 
         private async void OnClick_ChargingSessions(object sender, RoutedEventArgs e)
@@ -244,7 +261,7 @@ namespace OctopusData.Forms
                     List<OctopusCharger> octopusChargers = new List<OctopusCharger>();
                     List<OctopusChargeEvent> octopusChargeEvents = new List<OctopusChargeEvent>();
 
-                    Chargers chargers = await _httpHelper.ObtainChargersAsync(_account, day, _account.MovedIn);
+                    Chargers? chargers = await _httpHelper.ObtainChargersAsync(_account, day, _account.MovedIn);
                     if (chargers != null)
                     {
                         // Extract data from API
@@ -326,7 +343,6 @@ namespace OctopusData.Forms
 
                         day = day.AddMonths(-1);
                     }
-
                 }
             }
             catch (Exception exception)
@@ -343,9 +359,6 @@ namespace OctopusData.Forms
 
         private async void OnClick_ReadUsageAsync(object sender, RoutedEventArgs e)
         {
-            _logger = new Logger(ref _logNumber);
-            _httpHelper.SetLogger(_logger);
-
             SqLiteHelper sqLiteHelper = new SqLiteHelper(_account.Id, _logger);
 
             SetMouseCursor();

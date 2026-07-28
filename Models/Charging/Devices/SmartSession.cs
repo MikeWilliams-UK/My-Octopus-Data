@@ -5,5 +5,5 @@ namespace OctopusData.Models.Charging.Devices;
 public class SmartSession
 {
     [JsonPropertyName("edges")]
-    public List<Edge> Edges { get; set; } = new();
+    public List<Edge> Edges { get; set; } = [];
 }
