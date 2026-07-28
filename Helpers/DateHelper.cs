@@ -66,11 +66,11 @@ public static class DateHelper
         return $"{day:yyyy-MM-ddTHH:mm:ss.fffZ}";
     }
 
-    public static string FirstDayOfNextMonth(DateTime date, bool startOfDay = true)
+    public static string FirstDayOfNextMonth(DateTime date, bool endOfDay)
     {
         var day = new DateTime(date.Year, date.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         day = day.AddMonths(1);
-        if (!startOfDay)
+        if (endOfDay)
         {
             day = day.AddHours(23).AddMinutes(59).AddSeconds(59).AddMilliseconds(999);
         }

@@ -26,3 +26,14 @@ Bottom Left
 		{
 			"Authorization": "Bearer {{JWT From Postman}}"
 		}
+
+-- Useful SQLite queries
+
+SELECT StartTime,
+       EndTime,
+       EnergyAdded,
+       TypeOfCharge,
+       Problems
+FROM ChargeEvents
+WHERE StartTime > '2026-05-26'
+ORDER BY StartTime

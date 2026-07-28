@@ -116,7 +116,7 @@ namespace OctopusData.Helpers
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
                 .Replace("[[StartOfMonth]]", DateHelper.FirstDayOfThisMonth(currentDate))
-                .Replace("[[StartOfNextMonth]]", DateHelper.FirstDayOfNextMonth(currentDate))
+                .Replace("[[StartOfNextMonth]]", DateHelper.FirstDayOfNextMonth(currentDate, true))
                 .Replace("[[Device-Id]]", chargerId)
                 .Replace("[[query]]", query);
 
