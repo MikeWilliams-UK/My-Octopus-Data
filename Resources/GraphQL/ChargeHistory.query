@@ -15,10 +15,6 @@
               value
               unit
             }
-            cost {
-              amount
-              currency
-            }
             ... on SmartFlexChargingSession {
               type
               problems {
@@ -27,8 +23,6 @@
                 }
                 ... on SmartFlexChargingTruncation {
                   truncationCause
-                  achievableStateOfCharge
-                  originalAchievableStateOfCharge
                 }
               }
               targetType
@@ -39,6 +33,8 @@
                 currency
               }
             }
+            stateOfChargeChange
+            stateOfChargeFinal
           }
         }
         pageInfo {
@@ -70,18 +66,16 @@
                 }
                 ... on SmartFlexChargingTruncation {
                   truncationCause
-                  achievableStateOfCharge
-                  originalAchievableStateOfCharge
                 }
               }
               targetType
-              stateOfChargeFinal
-              stateOfChargeChange
             }
             cost {
               amount
               currency
             }
+            stateOfChargeChange
+            stateOfChargeFinal
           }
         }
         pageInfo {
