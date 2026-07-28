@@ -75,12 +75,6 @@
                 }
               }
               targetType
-              dispatches {
-                start
-                type
-                energyAddedKwh
-                end
-              }
             }
             cost {
               amount

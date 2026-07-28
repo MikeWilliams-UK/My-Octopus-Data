@@ -4,8 +4,8 @@
 https://jsonformatter.org/
 
 https://json2csharp.com/
-	Use PascalCase
-	Use JsonPropertyName (.NET Core)
+    Use PascalCase
+    Use JsonPropertyName (.NET Core)
 
 Database folder
 C:\ProgramData\OctopusData
@@ -23,15 +23,15 @@ https://api.octopus.energy/v1/graphql/
 
 Panels
 Top Left
-	Query
-		Copy from postman
+    Query
+        Copy from postman
 Bottom Left
-	Variables
-		Copy from Postman
-	Headers
-		{
-			"Authorization": "Bearer {{JWT From Postman}}"
-		}
+    Variables
+        Copy from Postman
+    Headers
+        {
+            "Authorization": "Bearer {{JWT From Postman}}"
+        }
 
 -- Useful SQLite queries
 
