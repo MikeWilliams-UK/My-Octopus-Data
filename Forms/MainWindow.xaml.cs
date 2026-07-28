@@ -287,7 +287,14 @@ namespace OctopusData.Forms
                                     StringBuilder stringBuilder = new StringBuilder();
                                     foreach (Problem problem in edge.Node.Problems)
                                     {
-                                        stringBuilder.AppendLine(problem.Cause);
+                                        if (!string.IsNullOrEmpty(problem.Cause))
+                                        {
+                                            stringBuilder.AppendLine(problem.Cause);
+                                        }
+                                        if (!string.IsNullOrEmpty(problem.TruncationCause))
+                                        {
+                                            stringBuilder.AppendLine(problem.TruncationCause);
+                                        }
                                     }
                                     octopusChargeEvent.Problems = stringBuilder.ToString().Trim();
                                 }

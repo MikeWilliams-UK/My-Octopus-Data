@@ -1,11 +1,4 @@
-﻿query getChargeHistory(
-  $accountNumber: String!,
-  $after: DateTime!,
-  $before: DateTime!, 
-  $sessionTypes: [ChargingSessionType!], 
-  $numberOfSessions: Int!, 
-  $deviceId: String)
-{
+﻿query getChargeHistory($accountNumber: String!, $after: DateTime!, $before: DateTime!, $sessionTypes: [ChargingSessionType!], $numberOfSessions: Int!, $deviceId: String) {
   devices(accountNumber: $accountNumber, deviceId: $deviceId) {
     ... on SmartFlexVehicle {
       chargingSessions(
@@ -34,11 +27,17 @@
                 }
                 ... on SmartFlexChargingTruncation {
                   truncationCause
+                  achievableStateOfCharge
+                  originalAchievableStateOfCharge
                 }
               }
-            }
-            ... on PublicChargingSession {
-              location
+              targetType
+              stateOfChargeChange
+              stateOfChargeFinal
+              cost {
+                amount
+                currency
+              }
             }
           }
         }
@@ -63,10 +62,6 @@
               value
               unit
             }
-            cost {
-              amount
-              currency
-            }
             ... on SmartFlexChargingSession {
               type
               problems {
@@ -75,11 +70,17 @@
                 }
                 ... on SmartFlexChargingTruncation {
                   truncationCause
+                  achievableStateOfCharge
+                  originalAchievableStateOfCharge
                 }
               }
+              targetType
+              stateOfChargeFinal
+              stateOfChargeChange
             }
-            ... on PublicChargingSession {
-              location
+            cost {
+              amount
+              currency
             }
           }
         }

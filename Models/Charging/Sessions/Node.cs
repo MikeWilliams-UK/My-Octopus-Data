@@ -21,4 +21,10 @@ public class Node
 
     [JsonPropertyName("problems")]
     public List<Problem> Problems { get; set; } = new();
+
+    [JsonPropertyName("stateOfChargeFinal")]
+    public string StateOfChargeFinal { get; set; } = string.Empty;
+
+    [JsonPropertyName("stateOfChargeChange")]
+    public string StateOfChargeChange { get; set; } = string.Empty;
 }
