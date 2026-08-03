@@ -71,7 +71,7 @@ namespace OctopusData.Helpers
                 .Replace("[[Electric-Supply-Point]]", account.ElectricMpan)
                 .Replace("[[query]]", query);
 
-            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl, "GraphQL.ElectricCosts");
+            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl, $"GraphQL.ElectricCosts-{DateHelper.IsoDateOnly(currentDate)}");
 
             return costs;
         }
@@ -89,7 +89,7 @@ namespace OctopusData.Helpers
                 .Replace("[[Gas-Supply-Point]]", account.GasMprn)
                 .Replace("[[query]]", query);
 
-            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl, "GraphQL.GasCosts");
+            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl, $"GraphQL.GasCosts-{DateHelper.IsoDateOnly(currentDate)}");
 
             return costs;
         }
@@ -106,7 +106,7 @@ namespace OctopusData.Helpers
                 .Replace("[[GoLive-Date]]", DateHelper.IsoDateTime(goLive))
                 .Replace("[[query]]", query);
 
-            Chargers? devices = await PostWithRedirect<Chargers>(requestUri, graphQl, "GraphQL.Chargers");
+            Chargers? devices = await PostWithRedirect<Chargers>(requestUri, graphQl, $"GraphQL.Chargers-{DateHelper.IsoDateOnly(currentDate)}");
 
             return devices;
         }
@@ -124,7 +124,7 @@ namespace OctopusData.Helpers
                 .Replace("[[Device-Id]]", chargerId)
                 .Replace("[[query]]", query);
 
-            ChargeHistory? history = await PostWithRedirect<ChargeHistory>(requestUri, graphQl, "GraphQL.ChargeHistory");
+            ChargeHistory? history = await PostWithRedirect<ChargeHistory>(requestUri, graphQl, $"GraphQL.ChargeHistory-{DateHelper.IsoDateOnly(currentDate)}");
 
             return history;
         }
@@ -140,7 +140,7 @@ namespace OctopusData.Helpers
                     account.ElectricMeterSerial,
                     currentDate.ToString("yyyy-MM-dd"));
 
-                return await GetWithRedirect<Usage>(requestUri, "ElectricHalfHourly");
+                return await GetWithRedirect<Usage>(requestUri, $"ElectricHalfHourly-{DateHelper.IsoDateOnly(currentDate)}");
             }
 
             return null;
@@ -157,7 +157,7 @@ namespace OctopusData.Helpers
                     account.GasMeterSerial,
                     currentDate.ToString("yyyy-MM-dd"));
 
-                return await GetWithRedirect<Usage>(requestUri, "GasHalfHourly");
+                return await GetWithRedirect<Usage>(requestUri, $"GasHalfHourly-{DateHelper.IsoDateOnly(currentDate)}");
             }
             return null;
         }

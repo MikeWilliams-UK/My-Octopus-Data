@@ -9,8 +9,8 @@ public static class StringHelper
         return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(value.ToLower());
     }
 
-    public static string ReplaceInvalid(string responseContent)
+    public static string ReplaceInvalid(string value)
     {
-        return responseContent.Replace("\\u002B", "+");
+        return value;
     }
 }
