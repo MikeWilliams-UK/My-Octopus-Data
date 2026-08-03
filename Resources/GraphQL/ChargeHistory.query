@@ -26,21 +26,17 @@
                 }
               }
               targetType
-              stateOfChargeChange
-              stateOfChargeFinal
               cost {
                 amount
                 currency
               }
               dispatches {
-                type
-                start
-                energyAddedKwh
                 end
+                energyAddedKwh
+                start
+                type
               }
             }
-            stateOfChargeChange
-            stateOfChargeFinal
           }
         }
         pageInfo {
@@ -75,13 +71,17 @@
                 }
               }
               targetType
+              dispatches {
+                end
+                energyAddedKwh
+                start
+                type
+              }
             }
             cost {
               amount
               currency
             }
-            stateOfChargeChange
-            stateOfChargeFinal
           }
         }
         pageInfo {
