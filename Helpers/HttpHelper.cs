@@ -21,6 +21,8 @@ namespace OctopusData.Helpers
         private readonly string _accountId;
         private readonly string _apiKey;
 
+        private bool _saveResponses;
+
         private string? _krakenToken;
 
         // HttpClient without auto-redirect
@@ -42,12 +44,14 @@ namespace OctopusData.Helpers
 
         public async Task<Details?> LoginAsync()
         {
+            _saveResponses = ConfigHelper.GetBoolean(_configuration, "SaveResponses", false);
+
             var uri = ConfigHelper.GetString(_configuration, "LoginUri", string.Empty);
             if (!string.IsNullOrEmpty(uri))
             {
                 var requestUri = string.Format(uri, _accountId);
 
-                return await GetWithRedirect<Details>(requestUri);
+                return await GetWithRedirect<Details>(requestUri, "Login");
             }
 
             return null;
@@ -67,7 +71,7 @@ namespace OctopusData.Helpers
                 .Replace("[[Electric-Supply-Point]]", account.ElectricMpan)
                 .Replace("[[query]]", query);
 
-            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl);
+            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl, "GraphQL.ElectricCosts");
 
             return costs;
         }
@@ -85,7 +89,7 @@ namespace OctopusData.Helpers
                 .Replace("[[Gas-Supply-Point]]", account.GasMprn)
                 .Replace("[[query]]", query);
 
-            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl);
+            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl, "GraphQL.GasCosts");
 
             return costs;
         }
@@ -102,7 +106,7 @@ namespace OctopusData.Helpers
                 .Replace("[[GoLive-Date]]", DateHelper.IsoDateTime(goLive))
                 .Replace("[[query]]", query);
 
-            Chargers? devices = await PostWithRedirect<Chargers>(requestUri, graphQl);
+            Chargers? devices = await PostWithRedirect<Chargers>(requestUri, graphQl, "GraphQL.Chargers");
 
             return devices;
         }
@@ -120,7 +124,7 @@ namespace OctopusData.Helpers
                 .Replace("[[Device-Id]]", chargerId)
                 .Replace("[[query]]", query);
 
-            ChargeHistory? history = await PostWithRedirect<ChargeHistory>(requestUri, graphQl);
+            ChargeHistory? history = await PostWithRedirect<ChargeHistory>(requestUri, graphQl, "GraphQL.ChargeHistory");
 
             return history;
         }
@@ -136,7 +140,7 @@ namespace OctopusData.Helpers
                     account.ElectricMeterSerial,
                     currentDate.ToString("yyyy-MM-dd"));
 
-                return await GetWithRedirect<Usage>(requestUri);
+                return await GetWithRedirect<Usage>(requestUri, "ElectricHalfHourly");
             }
 
             return null;
@@ -153,12 +157,12 @@ namespace OctopusData.Helpers
                     account.GasMeterSerial,
                     currentDate.ToString("yyyy-MM-dd"));
 
-                return await GetWithRedirect<Usage>(requestUri);
+                return await GetWithRedirect<Usage>(requestUri, "GasHalfHourly");
             }
             return null;
         }
 
-        private async Task<T?> GetWithRedirect<T>(string requestUri)
+        private async Task<T?> GetWithRedirect<T>(string requestUri, string requestType)
         {
             try
             {
@@ -192,15 +196,16 @@ namespace OctopusData.Helpers
 
                 var responseContent = await response.Content.ReadAsStringAsync();
 
-                Console.WriteLine($"Status: {(int)response.StatusCode} {response.ReasonPhrase}");
-                Console.WriteLine("Response body:");
-                Console.WriteLine(responseContent);
-
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger?.WriteLine($"{response.StatusCode} {response.ReasonPhrase}");
                     _logger?.WriteLine(responseContent);
                     return default;
+                }
+
+                if (_saveResponses)
+                {
+                    _logger?.DumpJson(requestType, responseContent);
                 }
 
                 return JsonSerializer.Deserialize<T>(responseContent);
@@ -217,14 +222,14 @@ namespace OctopusData.Helpers
             var graphQl = ResourceHelper.GetStringResource("GraphQL.ObtainKrakenToken.json");
             graphQl = graphQl.Replace("[[API-Key]]", _apiKey);
 
-            KrakenResponse? response = await PostWithRedirect<KrakenResponse>(requestUri, graphQl);
+            KrakenResponse? response = await PostWithRedirect<KrakenResponse>(requestUri, graphQl, "ObtainKrakenToken");
 
             string? token = response?.Data.ObtainKrakenToken.Token;
 
             return token;
         }
 
-        private async Task<T?> PostWithRedirect<T>(string requestUri, string body)
+        private async Task<T?> PostWithRedirect<T>(string requestUri, string body, string requestType)
         {
             try
             {
@@ -269,15 +274,16 @@ namespace OctopusData.Helpers
 
                 var responseContent = await response.Content.ReadAsStringAsync();
 
-                Console.WriteLine($"Status: {(int)response.StatusCode} {response.ReasonPhrase}");
-                Console.WriteLine("Response body:");
-                Console.WriteLine(responseContent);
-
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger?.WriteLine($"{response.StatusCode} {response.ReasonPhrase}");
                     _logger?.WriteLine(responseContent);
                     return default;
+                }
+
+                if (_saveResponses)
+                {
+                    _logger?.DumpJson(requestType, responseContent);
                 }
 
                 return JsonSerializer.Deserialize<T>(responseContent);

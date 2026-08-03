@@ -11,8 +11,8 @@ public class PageInfo
     public bool HasPreviousPage { get; set; }
 
     [JsonPropertyName("startCursor")]
-    public string StartCursor { get; set; } = string.Empty;
+    public string? StartCursor { get; set; } = string.Empty;
 
     [JsonPropertyName("endCursor")]
-    public string EndCursor { get; set; } = string.Empty;
+    public string? EndCursor { get; set; } = string.Empty;
 }

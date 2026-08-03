@@ -273,15 +273,15 @@ namespace OctopusData.Forms
                                 Name = device.Name
                             };
 
-                            if (device.PublicSession.Edges.Any())
+                            if (device.PublicSession != null && device.PublicSession.Edges.Any())
                             {
                                 charger.LastActive = device.PublicSession.Edges[0].Cursor;
                             }
-                            if (device.BoostSession.Edges.Any())
+                            if (device.BoostSession != null && device.BoostSession.Edges.Any())
                             {
                                 charger.LastActive = device.BoostSession.Edges[0].Cursor;
                             }
-                            if (device.SmartSession.Edges.Any())
+                            if (device.SmartSession != null && device.SmartSession.Edges.Any())
                             {
                                 charger.LastActive = device.SmartSession.Edges[0].Cursor;
                             }

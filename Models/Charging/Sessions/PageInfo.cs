@@ -8,5 +8,5 @@ public class PageInfo
     public bool HasPreviousPage { get; set; }
 
     [JsonPropertyName("startCursor")]
-    public DateTime StartCursor { get; set; }
+    public DateTime? StartCursor { get; set; }
 }
