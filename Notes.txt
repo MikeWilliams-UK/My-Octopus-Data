@@ -41,5 +41,16 @@ SELECT StartTime,
        TypeOfCharge,
        Problems
 FROM ChargeEvents
-WHERE StartTime > '2026-05-26'
+WHERE EnergyAdded > 0
+  AND StartTime > '2026-05-26'
+ORDER BY StartTime
+
+SELECT MIN(StartTime) [First Event],
+       MAX(EndTime) [Last Event],
+       COUNT(EnergyAdded) Events,
+       SUM(EnergyAdded) [kWh Added]
+FROM ChargeEvents
+WHERE EnergyAdded > 0
+  AND StartTime > '2026-07-01'
+GROUP BY SUBSTR(StartTime, 0, 11)
 ORDER BY StartTime
