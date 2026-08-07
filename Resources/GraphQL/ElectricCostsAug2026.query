@@ -1,0 +1,129 @@
+﻿query getDeviceConsumptionBreakdown(
+    $accountNumber: String!,
+    $first: Int!,
+    $utilityFilters: [UtilityFiltersInput!],
+    $modelledUtilityFilters: [UtilityFiltersInput!],
+    $startOn: Date,
+    $endOn: Date,
+    $startAt: DateTime,
+    $endAt: DateTime,
+    $timezone: String,
+    $cursor: String
+) {
+  account(accountNumber: $accountNumber) {
+    properties {
+      id
+      electricityMeterPoints {
+        agreements(includeInactive: false) {
+          tariff {
+            ... on TariffType {
+              productCode
+            }
+          }
+          validFrom
+          validTo
+        }
+      }
+      measurements(
+        first: $first
+        utilityFilters: $utilityFilters
+        startOn: $startOn
+        endOn: $endOn
+        startAt: $startAt
+        endAt: $endAt
+        timezone: $timezone
+        after: $cursor
+      ) {
+        edges {
+          node {
+            value
+            unit
+            ... on IntervalMeasurementType {
+              startAt
+              endAt
+              durationInSeconds
+            }
+            metaData {
+              statistics {
+                costExclTax {
+                  pricePerUnit {
+                    amount
+                  }
+                  costCurrency
+                  estimatedAmount
+                }
+                costInclTax {
+                  pricePerUnit {
+                    amount
+                  }
+                  costCurrency
+                  estimatedAmount
+                }
+                value
+                description
+                label
+                type
+              }
+            }
+          }
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+      modelledMeasurements: measurements(
+        first: $first
+        utilityFilters: $modelledUtilityFilters
+        startOn: $startOn
+        endOn: $endOn
+        startAt: $startAt
+        endAt: $endAt
+        timezone: $timezone
+        after: $cursor
+      ) {
+        edges {
+          node {
+            value
+            unit
+            ... on IntervalMeasurementType {
+              startAt
+              endAt
+              durationInSeconds
+            }
+            metaData {
+              statistics {
+                costExclTax {
+                  pricePerUnit {
+                    amount
+                  }
+                  costCurrency
+                  estimatedAmount
+                }
+                costInclTax {
+                  pricePerUnit {
+                    amount
+                  }
+                  costCurrency
+                  estimatedAmount
+                }
+                value
+                description
+                label
+                type
+              }
+            }
+          }
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+    }
+  }
+}

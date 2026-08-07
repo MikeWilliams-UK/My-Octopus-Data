@@ -1,0 +1,30 @@
+{
+  "operationName": "getMeasurements",
+  "variables": {
+    "accountNumber": "A-D2C77818",
+    "first": 100,
+    "startAt": "2026-08-03T11:00:00.000Z",
+    "endAt": "2026-08-05T10:59:59.999Z",
+    "timezone": "Europe/London",
+    "utilityFilters": [
+      {
+        "electricityFilters": {
+          "readingFrequencyType": "RAW_INTERVAL",
+          "readingDirection": "CONSUMPTION",
+          "marketSupplyPointId": "1100012234462"
+        }
+      }
+    ],
+    "modelledUtilityFilters": [
+      {
+        "electricityFilters": {
+          "readingFrequencyType": "RAW_INTERVAL",
+          "readingDirection": "CONSUMPTION",
+          "marketSupplyPointId": "1100012234462",
+          "modelledSubMeterReadings": true
+        }
+      }
+    ]
+  },
+  "query": "[[query]]"
+}
