@@ -35,8 +35,8 @@
     <EmbeddedResource Include="Resources\GraphQL\ChargeHistory.query" />
     <EmbeddedResource Include="Resources\GraphQL\Chargers.json" />
     <EmbeddedResource Include="Resources\GraphQL\Chargers.query" />
-    <EmbeddedResource Include="Resources\GraphQL\ElectricCostsAug2026.json" />
-    <EmbeddedResource Include="Resources\GraphQL\ElectricCostsAug2026.query" />
+    <EmbeddedResource Include="Resources\GraphQL\ElectricCosts03Aug2026.json" />
+    <EmbeddedResource Include="Resources\GraphQL\ElectricCosts03Aug2026.query" />
     <EmbeddedResource Include="Resources\GraphQL\ElectricCosts.json" />
     <EmbeddedResource Include="Resources\GraphQL\GasCosts.json" />
     <EmbeddedResource Include="Resources\GraphQL\GasCosts.query" />
