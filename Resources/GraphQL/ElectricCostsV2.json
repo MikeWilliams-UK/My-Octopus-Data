@@ -1,17 +1,17 @@
 {
-  "operationName": "getMeasurements",
+  "operationName": "getDeviceConsumptionBreakdown",
   "variables": {
-    "accountNumber": "A-D2C77818",
+    "accountNumber": "[[Account-Number]]",
     "first": 100,
-    "startAt": "2026-08-03T00:00:00.000Z",
-    "endAt": "2026-08-03T23:59:59.999Z",
+    "startAt": "[[StartOfThisPeriod]]",
+    "endAt": "[[StartOfNextPeriod]]",
     "timezone": "Europe/London",
     "utilityFilters": [
       {
         "electricityFilters": {
           "readingFrequencyType": "RAW_INTERVAL",
           "readingDirection": "CONSUMPTION",
-          "marketSupplyPointId": "1100012234462"
+          "marketSupplyPointId": "[[Electric-Supply-Point]]"
         }
       }
     ]

@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <None Remove="AppSettings.json" />
-    <None Remove="Resources\GraphQL\ElectricCosts.json" />
     <None Remove="Resources\GraphQL\GasCosts.json" />
     <None Remove="Resources\GraphQL\ObtainKrakenToken.json" />
     <None Remove="Resources\SqLite\Initial-Database.sql" />
@@ -39,12 +38,12 @@
     <EmbeddedResource Include="Resources\GraphQL\ChargeHistory.query" />
     <EmbeddedResource Include="Resources\GraphQL\Chargers.json" />
     <EmbeddedResource Include="Resources\GraphQL\Chargers.query" />
-    <EmbeddedResource Include="Resources\GraphQL\ElectricCosts03Aug2026.json" />
-    <EmbeddedResource Include="Resources\GraphQL\ElectricCosts03Aug2026.query" />
-    <EmbeddedResource Include="Resources\GraphQL\ElectricCosts.json" />
+    <EmbeddedResource Include="Resources\GraphQL\ElectricCostsV2.json" />
+    <EmbeddedResource Include="Resources\GraphQL\ElectricCostsV2.query" />
+    <EmbeddedResource Include="Resources\GraphQL\ElectricCostsV1.json" />
     <EmbeddedResource Include="Resources\GraphQL\GasCosts.json" />
     <EmbeddedResource Include="Resources\GraphQL\GasCosts.query" />
-    <EmbeddedResource Include="Resources\GraphQL\ElectricCosts.query" />
+    <EmbeddedResource Include="Resources\GraphQL\ElectricCostsV1.query" />
     <EmbeddedResource Include="Resources\GraphQL\ObtainKrakenToken.json" />
     <EmbeddedResource Include="Resources\SqLite\Initial-Database.sql" />
   </ItemGroup>

@@ -211,17 +211,26 @@ namespace OctopusData.Forms
                 SetMouseCursor();
                 SetStateOfControls(false);
 
-                var day = new DateTime(2026, 02, 01, 0, 0, 0, DateTimeKind.Local);
+                var day = new DateTime(2026, 08, 03, 0, 0, 0, DateTimeKind.Local);
 
-                var electric = await _httpHelper.ObtainElectricHalfHourlyCostsAsync(_account, day);
-                if (electric != null)
+                var electricV1 = await _httpHelper.ObtainElectricHalfHourlyCostsAsync(_account, day);
+                if (electricV1 != null)
                 {
-                    Debug.WriteLine(electric.Data.Account.Properties[0].Measurements.Edges.Count);
+                    Debug.WriteLine(electricV1.Data.Account.Properties[0].Id);
+                    Debug.WriteLine(electricV1.Data.Account.Properties[0].Measurements.Edges.Count);
+                }
+
+                var electricV2 = await _httpHelper.ObtainElectricUsageCostsAsync(_account, day);
+                if (electricV2 != null)
+                {
+                    Debug.WriteLine(electricV2.Data.Account.Properties[0].Id);
+                    Debug.WriteLine(electricV2.Data.Account.Properties[0].Measurements.Edges.Count);
                 }
 
                 var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
                 if (gas != null)
                 {
+                    Debug.WriteLine(gas.Data.Account.Properties[0].Id);
                     Debug.WriteLine(gas.Data.Account.Properties[0].Measurements.Edges.Count);
                 }
 

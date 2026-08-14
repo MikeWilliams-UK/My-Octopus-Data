@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using OctopusData.Models.ElectricCost;
 using OctopusData.Models.GasCost;
 
 namespace OctopusData.Helpers
@@ -57,44 +58,70 @@ namespace OctopusData.Helpers
             return null;
         }
 
-        public async Task<GasCosts?> ObtainElectricHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
-        {
-            string requestUri = "https://api.octopus.energy/v1/graphql/";
+        #region Usage With Costs
 
-            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ElectricCosts.query").Split(Environment.NewLine));
-            var graphQl = ResourceHelper.GetStringResource("GraphQL.ElectricCosts.json");
-
-            graphQl = graphQl
-                .Replace("[[Account-Number]]", account.Id)
-                .Replace("[[StartOfThisPeriod]]", DateHelper.StartOfToday(currentDate))
-                .Replace("[[StartOfNextPeriod]]", DateHelper.StartOfTomorrow(currentDate))
-                .Replace("[[Electric-Supply-Point]]", account.ElectricMpan)
-                .Replace("[[query]]", query);
-
-            GasCosts? costs = await PostWithRedirect<GasCosts>(requestUri, graphQl, $"GraphQL.ElectricCosts-{DateHelper.IsoDateOnly(currentDate)}");
-
-            return costs;
-        }
-
-        public async Task<GasCosts?> ObtainGasHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
+        public async Task<GasCosts?> ObtainGasHalfHourlyCostsAsync(OctopusAccount account, DateTime requestedDate)
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
             var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.GasCosts.query").Split(Environment.NewLine));
             var graphQl = ResourceHelper.GetStringResource("GraphQL.GasCosts.json");
+
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
-                .Replace("[[StartOfThisPeriod]]", DateHelper.StartOfToday(currentDate))
-                .Replace("[[StartOfNextPeriod]]", DateHelper.StartOfTomorrow(currentDate))
+                .Replace("[[StartOfThisPeriod]]", DateHelper.StartOfToday(requestedDate))
+                .Replace("[[StartOfNextPeriod]]", DateHelper.StartOfTomorrow(requestedDate))
                 .Replace("[[Gas-Supply-Point]]", account.GasMprn)
                 .Replace("[[query]]", query);
 
-            GasCosts? costs = await PostWithRedirect<GasCosts>(requestUri, graphQl, $"GraphQL.GasCosts-{DateHelper.IsoDateOnly(currentDate)}");
+            GasCosts? costs = await PostWithRedirect<GasCosts>(requestUri, graphQl, $"GraphQL.GasCosts-{DateHelper.IsoDateOnly(requestedDate)}");
 
             return costs;
         }
 
-        public async Task<Chargers?> ObtainChargersAsync(OctopusAccount account, DateTime currentDate, DateTime goLive)
+        public async Task<GasCosts?> ObtainElectricHalfHourlyCostsAsync(OctopusAccount account, DateTime requestedDate)
+        {
+            string requestUri = "https://api.octopus.energy/v1/graphql/";
+
+            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ElectricCostsV1.query").Split(Environment.NewLine));
+            var graphQl = ResourceHelper.GetStringResource("GraphQL.ElectricCostsV1.json");
+
+            graphQl = graphQl
+                .Replace("[[Account-Number]]", account.Id)
+                .Replace("[[StartOfThisPeriod]]", DateHelper.StartOfToday(requestedDate))
+                .Replace("[[StartOfNextPeriod]]", DateHelper.StartOfTomorrow(requestedDate))
+                .Replace("[[Electric-Supply-Point]]", account.ElectricMpan)
+                .Replace("[[query]]", query);
+
+            GasCosts? costs = await PostWithRedirect<GasCosts>(requestUri, graphQl, $"GraphQL.ElectricCostsV1-{DateHelper.IsoDateOnly(requestedDate)}");
+
+            return costs;
+        }
+
+        public async Task<ElectricCosts?> ObtainElectricUsageCostsAsync(OctopusAccount account, DateTime requestedDate)
+        {
+            string requestUri = "https://api.octopus.energy/v1/graphql/";
+
+            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ElectricCostsV2.query").Split(Environment.NewLine));
+            var graphQl = ResourceHelper.GetStringResource("GraphQL.ElectricCostsV2.json");
+
+            graphQl = graphQl
+                .Replace("[[Account-Number]]", account.Id)
+                .Replace("[[StartOfThisPeriod]]", DateHelper.StartOfToday(requestedDate))
+                .Replace("[[StartOfNextPeriod]]", DateHelper.StartOfTomorrow(requestedDate))
+                .Replace("[[Electric-Supply-Point]]", account.ElectricMpan)
+                .Replace("[[query]]", query);
+
+            ElectricCosts? costs = await PostWithRedirect<ElectricCosts>(requestUri, graphQl, $"GraphQL.ElectricCostsV2-{DateHelper.IsoDateOnly(requestedDate)}");
+
+            return costs;
+        }
+
+        #endregion With Costs
+
+        #region Charging Sessions
+
+        public async Task<Chargers?> ObtainChargersAsync(OctopusAccount account, DateTime requestedDate, DateTime goLive)
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
@@ -102,16 +129,16 @@ namespace OctopusData.Helpers
             var graphQl = ResourceHelper.GetStringResource("GraphQL.Chargers.json");
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
-                .Replace("[[StartOfMonth]]", DateHelper.FirstDayOfThisMonth(currentDate))
+                .Replace("[[StartOfMonth]]", DateHelper.FirstDayOfThisMonth(requestedDate))
                 .Replace("[[GoLive-Date]]", DateHelper.IsoDateTime(goLive))
                 .Replace("[[query]]", query);
 
-            Chargers? devices = await PostWithRedirect<Chargers>(requestUri, graphQl, $"GraphQL.Chargers-{DateHelper.IsoDateOnly(currentDate)}");
+            Chargers? devices = await PostWithRedirect<Chargers>(requestUri, graphQl, $"GraphQL.Chargers-{DateHelper.IsoDateOnly(requestedDate)}");
 
             return devices;
         }
 
-        public async Task<ChargeHistory?> ObtainChargeHistoryAsync(OctopusAccount account, DateTime currentDate, string chargerId)
+        public async Task<ChargeHistory?> ObtainChargeHistoryAsync(OctopusAccount account, DateTime requestedDate, string chargerId)
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
@@ -119,17 +146,21 @@ namespace OctopusData.Helpers
             var graphQl = ResourceHelper.GetStringResource("GraphQL.ChargeHistory.json");
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
-                .Replace("[[StartOfMonth]]", DateHelper.FirstDayOfThisMonth(currentDate))
-                .Replace("[[StartOfNextMonth]]", DateHelper.FirstDayOfNextMonth(currentDate, true))
+                .Replace("[[StartOfMonth]]", DateHelper.FirstDayOfThisMonth(requestedDate))
+                .Replace("[[StartOfNextMonth]]", DateHelper.FirstDayOfNextMonth(requestedDate, true))
                 .Replace("[[Device-Id]]", chargerId)
                 .Replace("[[query]]", query);
 
-            ChargeHistory? history = await PostWithRedirect<ChargeHistory>(requestUri, graphQl, $"GraphQL.ChargeHistory-{DateHelper.IsoDateOnly(currentDate)}");
+            ChargeHistory? history = await PostWithRedirect<ChargeHistory>(requestUri, graphQl, $"GraphQL.ChargeHistory-{DateHelper.IsoDateOnly(requestedDate)}");
 
             return history;
         }
 
-        public async Task<Usage?> ObtainElectricHalfHourlyUsageAsync(OctopusAccount account, DateTime currentDate)
+        #endregion Charging
+
+        #region HalfHourly Usage
+
+        public async Task<Usage?> ObtainElectricHalfHourlyUsageAsync(OctopusAccount account, DateTime requestedDate)
         {
             var uri = ConfigHelper.GetString(_configuration, "ElectricHalfHourlyUri", string.Empty);
 
@@ -138,15 +169,15 @@ namespace OctopusData.Helpers
                 var requestUri = string.Format(uri,
                     account.ElectricMpan,
                     account.ElectricMeterSerial,
-                    currentDate.ToString("yyyy-MM-dd"));
+                    requestedDate.ToString("yyyy-MM-dd"));
 
-                return await GetWithRedirect<Usage>(requestUri, $"ElectricHalfHourly-{DateHelper.IsoDateOnly(currentDate)}");
+                return await GetWithRedirect<Usage>(requestUri, $"ElectricHalfHourly-{DateHelper.IsoDateOnly(requestedDate)}");
             }
 
             return null;
         }
 
-        public async Task<Usage?> ObtainGasHalfHourlyUsageAsync(OctopusAccount account, DateTime currentDate)
+        public async Task<Usage?> ObtainGasHalfHourlyUsageAsync(OctopusAccount account, DateTime requestedDate)
         {
             var uri = ConfigHelper.GetString(_configuration, "GasHalfHourlyUri", string.Empty);
 
@@ -155,12 +186,14 @@ namespace OctopusData.Helpers
                 var requestUri = string.Format(uri,
                     account.GasMprn,
                     account.GasMeterSerial,
-                    currentDate.ToString("yyyy-MM-dd"));
+                    requestedDate.ToString("yyyy-MM-dd"));
 
-                return await GetWithRedirect<Usage>(requestUri, $"GasHalfHourly-{DateHelper.IsoDateOnly(currentDate)}");
+                return await GetWithRedirect<Usage>(requestUri, $"GasHalfHourly-{DateHelper.IsoDateOnly(requestedDate)}");
             }
             return null;
         }
+
+        #endregion HalfHourly Usage
 
         private async Task<T?> GetWithRedirect<T>(string requestUri, string requestType)
         {
@@ -215,18 +248,6 @@ namespace OctopusData.Helpers
                 _logger?.WriteLine(ex.ToString());
                 return default;
             }
-        }
-
-        private async Task<string?> FetchKrakenToken(string requestUri)
-        {
-            var graphQl = ResourceHelper.GetStringResource("GraphQL.ObtainKrakenToken.json");
-            graphQl = graphQl.Replace("[[API-Key]]", _apiKey);
-
-            KrakenResponse? response = await PostWithRedirect<KrakenResponse>(requestUri, graphQl, "ObtainKrakenToken");
-
-            string? token = response?.Data.ObtainKrakenToken.Token;
-
-            return token;
         }
 
         private async Task<T?> PostWithRedirect<T>(string requestUri, string body, string requestType)
@@ -293,6 +314,18 @@ namespace OctopusData.Helpers
                 _logger?.WriteLine(ex.ToString());
                 return default;
             }
+        }
+
+        private async Task<string?> FetchKrakenToken(string requestUri)
+        {
+            var graphQl = ResourceHelper.GetStringResource("GraphQL.ObtainKrakenToken.json");
+            graphQl = graphQl.Replace("[[API-Key]]", _apiKey);
+
+            KrakenResponse? response = await PostWithRedirect<KrakenResponse>(requestUri, graphQl, "ObtainKrakenToken");
+
+            string? token = response?.Data.ObtainKrakenToken.Token;
+
+            return token;
         }
 
         private string EncodeCredentials()
