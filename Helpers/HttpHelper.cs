@@ -3,13 +3,13 @@ using OctopusData.Models;
 using OctopusData.Models.Account;
 using OctopusData.Models.Charging.Devices;
 using OctopusData.Models.Charging.Sessions;
-using OctopusData.Models.Cost;
 using OctopusData.Models.Usage;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using OctopusData.Models.GasCost;
 
 namespace OctopusData.Helpers
 {
@@ -57,7 +57,7 @@ namespace OctopusData.Helpers
             return null;
         }
 
-        public async Task<Costs?> ObtainElectricHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
+        public async Task<GasCosts?> ObtainElectricHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
@@ -71,12 +71,12 @@ namespace OctopusData.Helpers
                 .Replace("[[Electric-Supply-Point]]", account.ElectricMpan)
                 .Replace("[[query]]", query);
 
-            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl, $"GraphQL.ElectricCosts-{DateHelper.IsoDateOnly(currentDate)}");
+            GasCosts? costs = await PostWithRedirect<GasCosts>(requestUri, graphQl, $"GraphQL.ElectricCosts-{DateHelper.IsoDateOnly(currentDate)}");
 
             return costs;
         }
 
-        public async Task<Costs?> ObtainGasHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
+        public async Task<GasCosts?> ObtainGasHalfHourlyCostsAsync(OctopusAccount account, DateTime currentDate)
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
@@ -89,7 +89,7 @@ namespace OctopusData.Helpers
                 .Replace("[[Gas-Supply-Point]]", account.GasMprn)
                 .Replace("[[query]]", query);
 
-            Costs? costs = await PostWithRedirect<Costs>(requestUri, graphQl, $"GraphQL.GasCosts-{DateHelper.IsoDateOnly(currentDate)}");
+            GasCosts? costs = await PostWithRedirect<GasCosts>(requestUri, graphQl, $"GraphQL.GasCosts-{DateHelper.IsoDateOnly(currentDate)}");
 
             return costs;
         }

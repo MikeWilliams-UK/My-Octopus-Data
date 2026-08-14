@@ -8,6 +8,10 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Models\ElectricCost\Costs.cs" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<ApplicationDefinition Include="Forms\App.xaml" />
 	</ItemGroup>

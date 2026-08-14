@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace OctopusData.Models.Cost;
+namespace OctopusData.Models.GasCost;
 
 public class Node
 {

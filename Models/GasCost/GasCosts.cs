@@ -1,8 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace OctopusData.Models.Cost;
+namespace OctopusData.Models.GasCost;
 
-public class Costs
+// Root
+public class GasCosts
 {
     [JsonPropertyName("data")]
     public Data Data { get; set; } = new();

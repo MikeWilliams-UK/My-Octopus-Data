@@ -297,35 +297,38 @@ namespace OctopusData.Forms
 
                             if (chargeHistory != null && chargeHistory.Data.Devices.Any())
                             {
-                                foreach (Edge edge in chargeHistory.Data.Devices[0].ChargingSessions.Edges)
+                                if (chargeHistory.Data.Devices[0].ChargingSessions != null)
                                 {
-                                    OctopusChargeEvent octopusChargeEvent = new OctopusChargeEvent
+                                    foreach (Edge edge in chargeHistory.Data.Devices[0].ChargingSessions.Edges)
                                     {
-                                        ChargerId = charger.Id,
-                                        StartTime = edge.Node.Start,
-                                        EndTime = edge.Node.End,
-                                        EnergyAdded = double.Parse(edge.Node.EnergyAdded.Value),
-                                        TypeOfCharge = edge.Node.Type
-                                    };
-
-                                    if (edge.Node.Problems != null && edge.Node.Problems.Any())
-                                    {
-                                        StringBuilder stringBuilder = new StringBuilder();
-                                        foreach (Problem problem in edge.Node.Problems)
+                                        OctopusChargeEvent octopusChargeEvent = new OctopusChargeEvent
                                         {
-                                            if (!string.IsNullOrEmpty(problem.Cause))
-                                            {
-                                                stringBuilder.AppendLine(problem.Cause);
-                                            }
-                                            if (!string.IsNullOrEmpty(problem.TruncationCause))
-                                            {
-                                                stringBuilder.AppendLine(problem.TruncationCause);
-                                            }
-                                        }
-                                        octopusChargeEvent.Problems = stringBuilder.ToString().Trim();
-                                    }
+                                            ChargerId = charger.Id,
+                                            StartTime = edge.Node.Start,
+                                            EndTime = edge.Node.End,
+                                            EnergyAdded = double.Parse(edge.Node.EnergyAdded.Value),
+                                            TypeOfCharge = edge.Node.Type
+                                        };
 
-                                    octopusChargeEvents.Add(octopusChargeEvent);
+                                        if (edge.Node.Problems != null && edge.Node.Problems.Any())
+                                        {
+                                            StringBuilder stringBuilder = new StringBuilder();
+                                            foreach (Problem problem in edge.Node.Problems)
+                                            {
+                                                if (!string.IsNullOrEmpty(problem.Cause))
+                                                {
+                                                    stringBuilder.AppendLine(problem.Cause);
+                                                }
+                                                if (!string.IsNullOrEmpty(problem.TruncationCause))
+                                                {
+                                                    stringBuilder.AppendLine(problem.TruncationCause);
+                                                }
+                                            }
+                                            octopusChargeEvent.Problems = stringBuilder.ToString().Trim();
+                                        }
+
+                                        octopusChargeEvents.Add(octopusChargeEvent);
+                                    }
                                 }
                             }
                         }
