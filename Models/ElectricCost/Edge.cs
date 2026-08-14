@@ -1,0 +1,9 @@
+﻿using System.Text.Json.Serialization;
+
+namespace OctopusData.Models.ElectricCost;
+
+public class Edge
+{
+    [JsonPropertyName("node")]
+    public Node Node { get; set; } = new();
+}
