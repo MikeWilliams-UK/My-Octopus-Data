@@ -1,13 +1,13 @@
 ﻿query getDeviceConsumptionBreakdown(
-  $accountNumber: String!,
-  $first: Int!,
-  $utilityFilters: [UtilityFiltersInput!],
-  $startOn: Date,
-  $endOn: Date,
-  $startAt: DateTime,
-  $endAt: DateTime,
-  $timezone: String,
-  $cursor: String
+    $accountNumber: String!,
+    $first: Int!,
+    $utilityFilters: [UtilityFiltersInput!],
+    $startOn: Date,
+    $endOn: Date,
+    $startAt: DateTime,
+    $endAt: DateTime,
+    $timezone: String,
+    $cursor: String
 ) {
   account(accountNumber: $accountNumber) {
     properties {
@@ -59,18 +59,11 @@
                   estimatedAmount
                 }
                 value
-                description
                 label
                 type
               }
             }
           }
-        }
-        pageInfo {
-          hasNextPage
-          hasPreviousPage
-          startCursor
-          endCursor
         }
       }
     }

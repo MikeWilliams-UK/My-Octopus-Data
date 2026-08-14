@@ -13,8 +13,6 @@ public class Statistic
     [JsonPropertyName("value")]
     public string Value { get; set; } = string.Empty;
 
-    [JsonPropertyName("description")]
-    public object Description { get; set; } = new();
 
     [JsonPropertyName("label")]
     public string Label { get; set; } = string.Empty;

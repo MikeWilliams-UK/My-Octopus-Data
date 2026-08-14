@@ -227,6 +227,8 @@ namespace OctopusData.Forms
                     Debug.WriteLine(electricV2.Data.Account.Properties[0].Measurements.Edges.Count);
                 }
 
+                var first = electricV2.Data.Account.Properties[0].Measurements.Edges[0];
+
                 var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
                 if (gas != null)
                 {
