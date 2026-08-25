@@ -14,12 +14,11 @@ CREATE UNIQUE INDEX Idx_MeterRegisters ON MeterRegisters (Id ASC);
 CREATE TABLE Agreements (StartDate STRING NOT NULL, EndDate STRING, FuelType STRING NOT NULL, TariffCode STRING NOT NULL);
 CREATE UNIQUE INDEX Idx_Agreements ON Agreements (StartDate ASC, TariffCode ASC);
 
-CREATE TABLE HalfHourlyElectric (StartTime STRING PRIMARY KEY UNIQUE NOT NULL, Consumption DOUBLE);
-CREATE INDEX Idx_HalfHourlyElectric ON HalfHourlyElectric (StartTime ASC);
+CREATE TABLE HalfHourlyUsageElectric (StartTime STRING PRIMARY KEY UNIQUE NOT NULL, Consumption DOUBLE);
+CREATE INDEX Idx_HalfHourlyUsageElectric ON HalfHourlyElectric (StartTime ASC);
 
-CREATE TABLE HalfHourlyGas (StartTime STRING PRIMARY KEY UNIQUE NOT NULL, Consumption DOUBLE);
-CREATE INDEX Idx_HalfHourlyGas ON HalfHourlyGas (StartTime ASC);
-
+CREATE TABLE HalfHourlyUsageGas (StartTime STRING PRIMARY KEY UNIQUE NOT NULL, Consumption DOUBLE);
+CREATE INDEX Idx_HalfHourlyUsageGas ON HalfHourlyGas (StartTime ASC);
 
 -- ToDo: Costs NB: Only gas has costs at present !!!
 

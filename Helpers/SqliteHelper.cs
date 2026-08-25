@@ -195,7 +195,7 @@ public partial class SqLiteHelper
             var stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("SELECT MAX(StartTime) AS Max, MIN(StartTime) AS Min, Count(1) AS Count");
-            stringBuilder.AppendLine($"FROM HalfHourly{fuelType}");
+            stringBuilder.AppendLine($"FROM HalfHourlyUsage{fuelType}");
 
             var command = new SQLiteCommand(stringBuilder.ToString(), connection);
             var reader = command.ExecuteReader();

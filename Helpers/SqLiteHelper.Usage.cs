@@ -15,7 +15,7 @@ public partial class SqLiteHelper
             var stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("SELECT COUNT(1)");
-            stringBuilder.AppendLine($"FROM HalfHourly{fuelTYpe}");
+            stringBuilder.AppendLine($"FROM HalfHourlyUsage{fuelTYpe}");
             stringBuilder.AppendLine($"WHERE StartTime LIKE '{year}-{month:D2}-{day:D2}%'");
 
             var command = new SQLiteCommand(stringBuilder.ToString(), connection);
@@ -39,7 +39,7 @@ public partial class SqLiteHelper
 
                 var timeStamp = DateHelper.SortableTimeAndTime(item.Interval.Start);
 
-                stringBuilder.AppendLine($"INSERT INTO HalfHourly{fuelType}");
+                stringBuilder.AppendLine($"INSERT INTO HalfHourlyUsage{fuelType}");
                 stringBuilder.AppendLine("VALUES");
                 stringBuilder.AppendLine($"('{timeStamp}', {item.Consumption})");
                 stringBuilder.AppendLine("ON CONFLICT (StartTime)");
@@ -62,7 +62,7 @@ public partial class SqLiteHelper
             var stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("SELECT StartTime, Consumption");
-            stringBuilder.AppendLine($"FROM HalfHourly{fuelType}");
+            stringBuilder.AppendLine($"FROM HalfHourlyUsage{fuelType}");
             stringBuilder.AppendLine("ORDER BY StartTime DESC");
 
             var command = new SQLiteCommand(stringBuilder.ToString(), connection);
