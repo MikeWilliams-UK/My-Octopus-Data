@@ -213,6 +213,13 @@ namespace OctopusData.Forms
 
                 var day = new DateTime(2026, 08, 03, 0, 0, 0, DateTimeKind.Local);
 
+                var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
+                if (gas != null)
+                {
+                    Debug.WriteLine(gas.Data.Account.Properties[0].Id);
+                    Debug.WriteLine(gas.Data.Account.Properties[0].Measurements.Edges.Count);
+                }
+
                 var electricV1 = await _httpHelper.ObtainElectricHalfHourlyCostsAsync(_account, day);
                 if (electricV1 != null)
                 {
@@ -225,15 +232,6 @@ namespace OctopusData.Forms
                 {
                     Debug.WriteLine(electricV2.Data.Account.Properties[0].Id);
                     Debug.WriteLine(electricV2.Data.Account.Properties[0].Measurements.Edges.Count);
-                }
-
-                var first = electricV2.Data.Account.Properties[0].Measurements.Edges[0];
-
-                var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
-                if (gas != null)
-                {
-                    Debug.WriteLine(gas.Data.Account.Properties[0].Id);
-                    Debug.WriteLine(gas.Data.Account.Properties[0].Measurements.Edges.Count);
                 }
 
                 // ToDo: Save these to the database
