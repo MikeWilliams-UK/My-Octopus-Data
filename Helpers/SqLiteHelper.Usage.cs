@@ -76,7 +76,7 @@ public partial class SqLiteHelper
                         var dto = new OctopusHalfHourly
                         {
                             Consumption = FieldAsDouble(reader["Consumption"]),
-                            Interval = new OctopusInterval() { Start = FieldAsTime(reader["StartTime"]) }
+                            Interval = new OctopusInterval { Start = FieldAsTime(reader["StartTime"]) }
                         };
                         result.Add(dto);
                     }
