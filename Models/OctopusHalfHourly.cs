@@ -2,6 +2,7 @@
 
 public class OctopusHalfHourly
 {
-    public double Consumption { get; set; }
     public OctopusInterval Interval { get; set; } = new();
+
+    public double Consumption { get; set; }
 }

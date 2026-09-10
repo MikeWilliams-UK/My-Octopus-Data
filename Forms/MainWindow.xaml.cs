@@ -211,7 +211,7 @@ namespace OctopusData.Forms
                 SetMouseCursor();
                 SetStateOfControls(false);
 
-                var day = new DateTime(2026, 08, 03, 0, 0, 0, DateTimeKind.Local);
+                var day = new DateTime(2026, 09, 06, 0, 0, 0, DateTimeKind.Local);
 
                 var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
                 if (gas != null)
@@ -227,14 +227,79 @@ namespace OctopusData.Forms
                     Debug.WriteLine(electricV1.Data.Account.Properties[0].Measurements.Edges.Count);
                 }
 
+                List<OctopusHalfHourlyElectricCosts> electricCosts = [];
                 var electricV2 = await _httpHelper.ObtainElectricUsageCostsAsync(_account, day);
                 if (electricV2 != null)
                 {
+                    foreach (var edge in electricV2.Data.Account.Properties[0].Measurements.Edges)
+                    {
+                        var costs = new OctopusHalfHourlyElectricCosts
+                        {
+                            Interval = new OctopusInterval
+                            {
+                                Start = edge.Node.StartAt,
+                                End = edge.Node.EndAt
+                            },
+                            Consumption = double.Parse(edge.Node.Value)
+                        };
+
+                        foreach (var statistic in edge.Node.MetaData.Statistics)
+                        {
+                            if (statistic.Type.Equals("STANDING_CHARGE_COST"))
+                            {
+                                var cd = new OctopusCostData
+                                {
+                                    CostType = "Standing Charge",
+                                    CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                    CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                };
+
+                                costs.Costs.Add(cd);
+                            }
+                            else
+                            {
+                                var cd = new OctopusCostData
+                                {
+                                    Consumption = double.Parse(statistic.Value),
+                                    UnitRateExcludingVat = double.Parse(statistic.CostExclTax.PricePerUnit.Amount),
+                                    CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                    UnitRateIncludingVat = double.Parse(statistic.CostInclTax.PricePerUnit.Amount),
+                                    CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                };
+
+                                switch (statistic.Label)
+                                {
+                                    case "CONSUMPTION_CHARGE_ECO7_DAY_B":
+                                        cd.CostType = "E7 Day";
+                                        break;
+                                    case "CONSUMPTION_CHARGE_ECO7_NIGHT_B":
+                                        cd.CostType = "E7 Night";
+                                        break;
+                                    case "CONSUMPTION_CHARGE_EV_DEVICE_OFF_PEAK_B":
+                                        cd.CostType = "EV Off Peak";
+                                        break;
+                                    case "CONSUMPTION_CHARGE_EV_DEVICE_PEAK_B":
+                                        cd.CostType = "EV Peak";
+                                        break;
+
+                                    default:
+                                        cd.CostType = statistic.Label;
+                                        break;
+                                }
+
+                                costs.Costs.Add(cd);
+                            }
+                        }
+
+                        electricCosts.Add(costs);
+                    }
+
                     Debug.WriteLine(electricV2.Data.Account.Properties[0].Id);
                     Debug.WriteLine(electricV2.Data.Account.Properties[0].Measurements.Edges.Count);
                 }
 
                 // ToDo: Save these to the database
+
 
                 return;
             }
