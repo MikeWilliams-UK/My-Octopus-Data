@@ -15,10 +15,10 @@ CREATE TABLE Agreements (StartDate STRING NOT NULL, EndDate STRING, FuelType STR
 CREATE UNIQUE INDEX Idx_Agreements ON Agreements (StartDate ASC, TariffCode ASC);
 
 CREATE TABLE HalfHourlyUsageElectric (StartTime STRING PRIMARY KEY UNIQUE NOT NULL, Consumption DOUBLE);
-CREATE INDEX Idx_HalfHourlyUsageElectric ON HalfHourlyElectric (StartTime ASC);
+CREATE INDEX Idx_HalfHourlyUsageElectric ON HalfHourlyUsageElectric (StartTime ASC);
 
 CREATE TABLE HalfHourlyUsageGas (StartTime STRING PRIMARY KEY UNIQUE NOT NULL, Consumption DOUBLE);
-CREATE INDEX Idx_HalfHourlyUsageGas ON HalfHourlyGas (StartTime ASC);
+CREATE INDEX Idx_HalfHourlyUsageGas ON HalfHourlyUsageGas (StartTime ASC);
 
 -- ToDo: Costs NB: Only gas has costs at present !!!
 
