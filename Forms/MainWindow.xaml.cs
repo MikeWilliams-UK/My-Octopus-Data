@@ -398,6 +398,13 @@ namespace OctopusData.Forms
                 {
                     SetStatusText($"Fetching Electricity Costs for {currentDay:yyyy-MM-dd}");
 
+                    if (currentDay < new DateTime(2026, 08, 01, 0,0,0, DateTimeKind.Utc))
+                    {
+                        Debugger.Break();
+
+                        var json = await _httpHelper.ObtainElectricHalfHourlyCostsAsync(_account, currentDay);
+                    }
+
                     List<OctopusHalfHourlyCost> costsElectric = [];
                     var jsonElectric = await _httpHelper.ObtainElectricUsageCostsAsync(_account, currentDay);
                     if (jsonElectric != null)
@@ -439,7 +446,7 @@ namespace OctopusData.Forms
 
                                     if (!string.IsNullOrEmpty(statistic.Value))
                                     {
-                                        cd.Consumption = double.Parse(statistic.Value);-
+                                        cd.Consumption = double.Parse(statistic.Value);
                                     }
 
                                     switch (statistic.Label)
