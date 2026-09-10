@@ -1,6 +1,6 @@
 ﻿namespace OctopusData.Models;
 
-public class OctopusHalfHourly
+public class OctopusHalfHourlyConsumption
 {
     public OctopusInterval Interval { get; set; } = new();
 

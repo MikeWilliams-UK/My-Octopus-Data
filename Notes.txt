@@ -45,6 +45,7 @@ WHERE EnergyAdded > 0
   AND StartTime > '2026-05-26'
 ORDER BY StartTime
 
+-- Charge Events
 SELECT MIN(StartTime) [First Event],
        MAX(EndTime) [Last Event],
        COUNT(EnergyAdded) Events,
@@ -52,5 +53,30 @@ SELECT MIN(StartTime) [First Event],
 FROM ChargeEvents
 WHERE EnergyAdded > 0
   AND StartTime > '2026-07-01'
-GROUP BY SUBSTR(StartTime, 0, 11)
+GROUP BY SUBSTR(StartTime, 1, 11)
+ORDER BY StartTime
+
+-- Charge Costs
+Select *
+FROM HalfHourlyCostsElectric 
+Where 1=1
+AND Consumption > 0
+AND SUBSTR(CostType, 1, 2) = 'EV'
+--AND StartTime > '2026-08-16 11' AND StartTime < '2026-08-16 13'
+ORDER BY StartTime
+
+-- Find out how much electricity should be free
+Select *
+FROM HalfHourlyCostsElectric 
+Where 1=1
+AND Consumption > 0
+AND StartTime > '2026-08-16 11' AND StartTime < '2026-08-16 13'
+ORDER BY StartTime
+
+-- All Gas Charges
+Select *
+FROM HalfHourlyCostsGas
+Where 1=1
+AND Consumption > 0
+AND StartTime > '2026-09-01'
 ORDER BY StartTime

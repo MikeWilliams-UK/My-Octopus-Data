@@ -3,14 +3,14 @@ using OctopusData.Models;
 using OctopusData.Models.Account;
 using OctopusData.Models.Charging.Devices;
 using OctopusData.Models.Charging.Sessions;
+using OctopusData.Models.ElectricCost;
+using OctopusData.Models.GasCost;
 using OctopusData.Models.Usage;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using OctopusData.Models.ElectricCost;
-using OctopusData.Models.GasCost;
 
 namespace OctopusData.Helpers
 {
@@ -117,7 +117,7 @@ namespace OctopusData.Helpers
             return costs;
         }
 
-        #endregion With Costs
+        #endregion Usage With Costs
 
         #region Charging Sessions
 
@@ -156,11 +156,11 @@ namespace OctopusData.Helpers
             return history;
         }
 
-        #endregion Charging
+        #endregion Charging Sessions
 
         #region HalfHourly Usage
 
-        public async Task<Usage?> ObtainElectricHalfHourlyUsageAsync(OctopusAccount account, DateTime requestedDate)
+        public async Task<Usage?> ObtainElectricHalfHourlyConsumptionAsync(OctopusAccount account, DateTime requestedDate)
         {
             var uri = ConfigHelper.GetString(_configuration, "ElectricHalfHourlyUri", string.Empty);
 
@@ -177,7 +177,7 @@ namespace OctopusData.Helpers
             return null;
         }
 
-        public async Task<Usage?> ObtainGasHalfHourlyUsageAsync(OctopusAccount account, DateTime requestedDate)
+        public async Task<Usage?> ObtainGasHalfHourlyConsumptionAsync(OctopusAccount account, DateTime requestedDate)
         {
             var uri = ConfigHelper.GetString(_configuration, "GasHalfHourlyUri", string.Empty);
 

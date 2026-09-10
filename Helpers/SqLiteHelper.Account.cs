@@ -68,7 +68,7 @@ public partial class SqLiteHelper
             stringBuilder.AppendLine($"('{agreement.StartDate}', '{agreement.EndDate}', '{agreement.FuelType}', '{agreement.TariffCode}')");
             stringBuilder.AppendLine("ON CONFLICT (StartDate, TariffCode)");
             stringBuilder.AppendLine("DO UPDATE SET");
-            stringBuilder.AppendLine("  StartDate = excluded.StartDate, EndDate = excluded.EndDate, FuelType = excluded.FuelType, TariffCode = excluded.TariffCode");
+            stringBuilder.AppendLine("StartDate = excluded.StartDate, EndDate = excluded.EndDate, FuelType = excluded.FuelType, TariffCode = excluded.TariffCode");
 
             var command = new SQLiteCommand(stringBuilder.ToString(), connection);
             command.ExecuteNonQuery();
@@ -86,7 +86,7 @@ public partial class SqLiteHelper
             stringBuilder.AppendLine($"('{register.Id}', '{register.Rate}', '{Constants.Electric}')");
             stringBuilder.AppendLine("ON CONFLICT (Id)");
             stringBuilder.AppendLine("DO UPDATE SET");
-            stringBuilder.AppendLine("  Id = excluded.Id, Rate = excluded.Rate, FuelType = excluded.FuelType");
+            stringBuilder.AppendLine("Id = excluded.Id, Rate = excluded.Rate, FuelType = excluded.FuelType");
 
             var command = new SQLiteCommand(stringBuilder.ToString(), connection);
             command.ExecuteNonQuery();

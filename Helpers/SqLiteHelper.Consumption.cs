@@ -15,7 +15,7 @@ public partial class SqLiteHelper
             var stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("SELECT COUNT(1)");
-            stringBuilder.AppendLine($"FROM HalfHourlyUsage{fuelTYpe}");
+            stringBuilder.AppendLine($"FROM HalfHourlyConsumption{fuelTYpe}");
             stringBuilder.AppendLine($"WHERE StartTime LIKE '{year}-{month:D2}-{day:D2}%'");
 
             var command = new SQLiteCommand(stringBuilder.ToString(), connection);
@@ -27,7 +27,7 @@ public partial class SqLiteHelper
         return result;
     }
 
-    public void UpsertHalfHourly(string fuelType, List<OctopusHalfHourly> items)
+    public void UpsertHalfHourlyConsumption(string fuelType, List<OctopusHalfHourlyConsumption> items)
     {
         using (var connection = GetConnection())
         {
@@ -39,7 +39,7 @@ public partial class SqLiteHelper
 
                 var timeStamp = DateHelper.SortableTimeAndTime(item.Interval.Start);
 
-                stringBuilder.AppendLine($"INSERT INTO HalfHourlyUsage{fuelType}");
+                stringBuilder.AppendLine($"INSERT INTO HalfHourlyConsumption{fuelType}");
                 stringBuilder.AppendLine("VALUES");
                 stringBuilder.AppendLine($"('{timeStamp}', {item.Consumption})");
                 stringBuilder.AppendLine("ON CONFLICT (StartTime)");
@@ -53,16 +53,16 @@ public partial class SqLiteHelper
         }
     }
 
-    public List<OctopusHalfHourly> FetchHalfHourly(string fuelType)
+    public List<OctopusHalfHourlyConsumption> FetchHalfHourly(string fuelType)
     {
-        var result = new List<OctopusHalfHourly>();
+        var result = new List<OctopusHalfHourlyConsumption>();
 
         using (var connection = GetConnection())
         {
             var stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("SELECT StartTime, Consumption");
-            stringBuilder.AppendLine($"FROM HalfHourlyUsage{fuelType}");
+            stringBuilder.AppendLine($"FROM HalfHourlyConsumption{fuelType}");
             stringBuilder.AppendLine("ORDER BY StartTime DESC");
 
             var command = new SQLiteCommand(stringBuilder.ToString(), connection);
@@ -73,7 +73,7 @@ public partial class SqLiteHelper
                 {
                     while (reader.Read())
                     {
-                        var dto = new OctopusHalfHourly
+                        var dto = new OctopusHalfHourlyConsumption
                         {
                             Consumption = FieldAsDouble(reader["Consumption"]),
                             Interval = new OctopusInterval { Start = FieldAsTime(reader["StartTime"]) }

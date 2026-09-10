@@ -37,7 +37,8 @@ public partial class SqLiteHelper
             stringBuilder.AppendLine("VALUES");
             stringBuilder.AppendLine($"('{charger.Id}', '{charger.Name}', '{charger.Status}', '{charger.LastActive}')");
             stringBuilder.AppendLine("ON CONFLICT (Id)");
-            stringBuilder.AppendLine("DO UPDATE SET Id = excluded.Id, Name = excluded.Name, Status = excluded.Status, LastActive = excluded.LastActive");
+            stringBuilder.AppendLine("DO UPDATE SET");
+            stringBuilder.AppendLine("Id = excluded.Id, Name = excluded.Name, Status = excluded.Status, LastActive = excluded.LastActive");
 
             var command = new SQLiteCommand(stringBuilder.ToString(), connection);
             command.ExecuteNonQuery();
@@ -57,12 +58,11 @@ public partial class SqLiteHelper
             stringBuilder.AppendLine("VALUES");
             stringBuilder.AppendLine($"('{chargeEvent.ChargerId}', '{startTime}', '{endTime}', '{chargeEvent.EnergyAdded}', '{chargeEvent.TypeOfCharge}', '{chargeEvent.Problems}')");
             stringBuilder.AppendLine("ON CONFLICT (ChargerId, StartTime)");
-            stringBuilder.AppendLine("DO UPDATE SET ChargerId = excluded.ChargerId, StartTime = excluded.StartTime, EndTime = excluded.EndTime, EnergyAdded = excluded.EnergyAdded, TypeOfCharge = excluded.TypeOfCharge, Problems = excluded.Problems");
+            stringBuilder.AppendLine("DO UPDATE SET");
+            stringBuilder.AppendLine("ChargerId = excluded.ChargerId, StartTime = excluded.StartTime, EndTime = excluded.EndTime, EnergyAdded = excluded.EnergyAdded, TypeOfCharge = excluded.TypeOfCharge, Problems = excluded.Problems");
 
             var command = new SQLiteCommand(stringBuilder.ToString(), connection);
             command.ExecuteNonQuery();
         }
     }
-
-
 }

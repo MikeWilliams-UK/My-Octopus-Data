@@ -39,8 +39,11 @@ namespace OctopusData.Forms
         private DateTime _supplyDateElectric = DateTime.MaxValue;
         private DateTime _supplyDateGas = DateTime.MaxValue;
 
-        private DateTime _lastDateElectric = DateTime.MinValue;
-        private DateTime _lastDateGas = DateTime.MinValue;
+        private DateTime _lastDateElectricConsumption = DateTime.MinValue;
+        private DateTime _lastDateGasConsumption = DateTime.MinValue;
+
+        private DateTime _lastDateElectricCosts = DateTime.MinValue;
+        private DateTime _lastDateGasCosts = DateTime.MinValue;
 
         private DispatcherTimer? _timer;
 
@@ -59,7 +62,7 @@ namespace OctopusData.Forms
             ReadFromRegistry();
         }
 
-        private async void OnClick_Login(object sender, RoutedEventArgs e)
+        private async void OnClick_LoginAsync(object sender, RoutedEventArgs e)
         {
             _logger = new Logger(ref _logNumber);
 
@@ -204,102 +207,277 @@ namespace OctopusData.Forms
             }
         }
 
-        private async void OnClick_Costs(object sender, RoutedEventArgs e)
+        private async void OnClick_GetConsumptionAsync(object sender, RoutedEventArgs e)
+        {
+            SqLiteHelper sqLiteHelper = new SqLiteHelper(_account.Id, _logger);
+
+            SetMouseCursor();
+            SetStateOfControls(false);
+
+            try
+            {
+                SetStatusText("Fetching Electric Consumption ...");
+
+                var currentDay = DateTime.UtcNow.Date;
+
+                // ToDo: Change second condition to allow for fetching all time
+                while (currentDay > _supplyDateElectric && currentDay > _lastDateElectricConsumption)
+                {
+                    SetStatusText($"Fetching Electric Consumption for {currentDay:yyyy-MM-dd}");
+
+                    var electric = await _httpHelper.ObtainElectricHalfHourlyConsumptionAsync(_account, currentDay);
+                    if (electric != null)
+                    {
+                        Debug.WriteLine($"Retrieved {electric.Results.Count} half-hourly electric records for {currentDay:d}.");
+
+                        if (electric.Results.Count > 0)
+                        {
+                            if (sqLiteHelper.CountHalfHourly(Constants.Electric,
+                                    currentDay.Year, currentDay.Month, currentDay.Day) != 48)
+                            {
+                                List<OctopusHalfHourlyConsumption> octopusHalfHourlies = [];
+
+                                foreach (var electricResult in electric.Results)
+                                {
+                                    var octopusHalfHourly = new OctopusHalfHourlyConsumption
+                                    {
+                                        Consumption = electricResult.Consumption,
+                                        Interval = new OctopusInterval
+                                        {
+                                            Start = electricResult.IntervalStart,
+                                            End = electricResult.IntervalEnd
+                                        }
+                                    };
+                                    octopusHalfHourlies.Add(octopusHalfHourly);
+                                }
+
+                                Debug.WriteLine($"Saving {electric.Results.Count} half-hourly electric records for {currentDay:d}.");
+                                sqLiteHelper.UpsertHalfHourlyConsumption(Constants.Electric, octopusHalfHourlies);
+                            }
+                        }
+                    }
+
+                    // Go back in time one day
+                    currentDay = currentDay.AddDays(-1);
+                }
+
+                currentDay = DateTime.UtcNow.Date;
+
+                SetStatusText("Fetching Gas Consumption ...");
+
+                // ToDo: Change second condition to allow for fetching all time
+                while (currentDay > _supplyDateGas && currentDay > _lastDateGasConsumption)
+                {
+                    SetStatusText($"Fetching Gas Consumption for {currentDay:yyyy-MM-dd}");
+
+                    var gas = await _httpHelper.ObtainGasHalfHourlyConsumptionAsync(_account, currentDay);
+                    if (gas != null)
+                    {
+                        Debug.WriteLine($"Retrieved {gas.Results.Count} half-hourly gas records for {currentDay:d}.");
+
+                        if (gas.Results.Count > 0)
+                        {
+                            if (sqLiteHelper.CountHalfHourly(Constants.Gas,
+                                    currentDay.Year, currentDay.Month, currentDay.Day) != 48)
+                            {
+                                List<OctopusHalfHourlyConsumption> octopusHalfHourlies = [];
+
+                                foreach (var electricResult in gas.Results)
+                                {
+                                    var octopusHalfHourly = new OctopusHalfHourlyConsumption
+                                    {
+                                        Consumption = electricResult.Consumption,
+                                        Interval = new OctopusInterval
+                                        {
+                                            Start = electricResult.IntervalStart,
+                                            End = electricResult.IntervalEnd
+                                        }
+                                    };
+                                    octopusHalfHourlies.Add(octopusHalfHourly);
+                                }
+
+                                Debug.WriteLine($"Saving {gas.Results.Count} half-hourly gas records for {currentDay:d}.");
+                                sqLiteHelper.UpsertHalfHourlyConsumption(Constants.Gas, octopusHalfHourlies);
+                            }
+                        }
+                    }
+
+                    // Go back in time one day
+                    currentDay = currentDay.AddDays(-1);
+                }
+            }
+            catch (Exception exception)
+            {
+                _logger.WriteLine(exception.ToString());
+                MessageBox.Show(exception.ToString(), "Exception");
+            }
+            finally
+            {
+                ClearDown();
+                ShowAccountInfo();
+            }
+        }
+
+        private async void OnClick_GetCostsAsync(object sender, RoutedEventArgs e)
         {
             try
             {
+                SqLiteHelper sqLiteHelper = new SqLiteHelper(_account.Id, _logger);
+
                 SetMouseCursor();
                 SetStateOfControls(false);
 
-                var day = new DateTime(2026, 09, 06, 0, 0, 0, DateTimeKind.Local);
+                var currentDay = DateTime.UtcNow.Date;
 
-                var gas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, day);
-                if (gas != null)
-                {
-                    Debug.WriteLine(gas.Data.Account.Properties[0].Id);
-                    Debug.WriteLine(gas.Data.Account.Properties[0].Measurements.Edges.Count);
-                }
+                SetStatusText("Fetching Gas Costs ...");
 
-                var electricV1 = await _httpHelper.ObtainElectricHalfHourlyCostsAsync(_account, day);
-                if (electricV1 != null)
+                // ToDo: Change second condition to allow for fetching all time
+                while (currentDay > _supplyDateGas && currentDay > _lastDateGasCosts)
                 {
-                    Debug.WriteLine(electricV1.Data.Account.Properties[0].Id);
-                    Debug.WriteLine(electricV1.Data.Account.Properties[0].Measurements.Edges.Count);
-                }
+                    SetStatusText($"Fetching Gas Costs for {currentDay:yyyy-MM-dd}");
 
-                List<OctopusHalfHourlyElectricCosts> electricCosts = [];
-                var electricV2 = await _httpHelper.ObtainElectricUsageCostsAsync(_account, day);
-                if (electricV2 != null)
-                {
-                    foreach (var edge in electricV2.Data.Account.Properties[0].Measurements.Edges)
+                    List<OctopusHalfHourlyCost> costsGas = [];
+                    var jsonGas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, currentDay);
+                    if (jsonGas != null)
                     {
-                        var costs = new OctopusHalfHourlyElectricCosts
+                        foreach (var edge in jsonGas.Data.Account.Properties[0].Measurements.Edges)
                         {
-                            Interval = new OctopusInterval
+                            var costs = new OctopusHalfHourlyCost
                             {
-                                Start = edge.Node.StartAt,
-                                End = edge.Node.EndAt
-                            },
-                            Consumption = double.Parse(edge.Node.Value)
-                        };
+                                Interval = new OctopusInterval
+                                {
+                                    Start = edge.Node.StartAt,
+                                    End = edge.Node.EndAt
+                                },
+                                Consumption = double.Parse(edge.Node.Value)
+                            };
 
-                        foreach (var statistic in edge.Node.MetaData.Statistics)
-                        {
-                            if (statistic.Type.Equals("STANDING_CHARGE_COST"))
+                            foreach (var statistic in edge.Node.MetaData.Statistics)
                             {
-                                var cd = new OctopusCostData
+                                if (statistic.Type.Equals("STANDING_CHARGE_COST"))
                                 {
-                                    CostType = "Standing Charge",
-                                    CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                    CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
-                                };
+                                    var cd = new OctopusCostData
+                                    {
+                                        CostType = "Standing Charge",
+                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                    };
 
-                                costs.Costs.Add(cd);
-                            }
-                            else
-                            {
-                                var cd = new OctopusCostData
-                                {
-                                    Consumption = double.Parse(statistic.Value),
-                                    UnitRateExcludingVat = double.Parse(statistic.CostExclTax.PricePerUnit.Amount),
-                                    CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                    UnitRateIncludingVat = double.Parse(statistic.CostInclTax.PricePerUnit.Amount),
-                                    CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
-                                };
-
-                                switch (statistic.Label)
-                                {
-                                    case "CONSUMPTION_CHARGE_ECO7_DAY_B":
-                                        cd.CostType = "E7 Day";
-                                        break;
-                                    case "CONSUMPTION_CHARGE_ECO7_NIGHT_B":
-                                        cd.CostType = "E7 Night";
-                                        break;
-                                    case "CONSUMPTION_CHARGE_EV_DEVICE_OFF_PEAK_B":
-                                        cd.CostType = "EV Off Peak";
-                                        break;
-                                    case "CONSUMPTION_CHARGE_EV_DEVICE_PEAK_B":
-                                        cd.CostType = "EV Peak";
-                                        break;
-
-                                    default:
-                                        cd.CostType = statistic.Label;
-                                        break;
+                                    costs.Costs.Add(cd);
                                 }
+                                else
+                                {
+                                    var cd = new OctopusCostData
+                                    {
+                                        CostType = "Gas",
+                                        Consumption = double.Parse(edge.Node.Value),
+                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                    };
 
-                                costs.Costs.Add(cd);
+                                    costs.Costs.Add(cd);
+                                }
                             }
+
+                            costsGas.Add(costs);
                         }
 
-                        electricCosts.Add(costs);
+                        sqLiteHelper.UpsertHalfHourlyCosts("Gas", costsGas);
                     }
 
-                    Debug.WriteLine(electricV2.Data.Account.Properties[0].Id);
-                    Debug.WriteLine(electricV2.Data.Account.Properties[0].Measurements.Edges.Count);
+                    // Go back in time one day
+                    currentDay = currentDay.AddDays(-1);
                 }
 
-                // ToDo: Save these to the database
+                currentDay = DateTime.UtcNow.Date;
 
+                SetStatusText("Fetching Electricity Costs ...");
+
+                // ToDo: Change second condition to allow for fetching all time
+                while (currentDay > _supplyDateElectric && currentDay > _lastDateElectricCosts)
+                {
+                    SetStatusText($"Fetching Electricity Costs for {currentDay:yyyy-MM-dd}");
+
+                    List<OctopusHalfHourlyCost> costsElectric = [];
+                    var jsonElectric = await _httpHelper.ObtainElectricUsageCostsAsync(_account, currentDay);
+                    if (jsonElectric != null)
+                    {
+                        foreach (var edge in jsonElectric.Data.Account.Properties[0].Measurements.Edges)
+                        {
+                            var costs = new OctopusHalfHourlyCost
+                            {
+                                Interval = new OctopusInterval
+                                {
+                                    Start = edge.Node.StartAt,
+                                    End = edge.Node.EndAt
+                                },
+                                Consumption = double.Parse(edge.Node.Value)
+                            };
+
+                            foreach (var statistic in edge.Node.MetaData.Statistics)
+                            {
+                                if (statistic.Type.Equals("STANDING_CHARGE_COST"))
+                                {
+                                    var cd = new OctopusCostData
+                                    {
+                                        CostType = "Standing Charge",
+                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                    };
+
+                                    costs.Costs.Add(cd);
+                                }
+                                else
+                                {
+                                    var cd = new OctopusCostData
+                                    {
+                                        RateExcludingVat = double.Parse(statistic.CostExclTax.PricePerUnit.Amount),
+                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        RateIncludingVat = double.Parse(statistic.CostInclTax.PricePerUnit.Amount),
+                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                    };
+
+                                    if (!string.IsNullOrEmpty(statistic.Value))
+                                    {
+                                        cd.Consumption = double.Parse(statistic.Value);-
+                                    }
+
+                                    switch (statistic.Label)
+                                    {
+                                        case "CONSUMPTION_CHARGE_ECO7_DAY_B":
+                                            cd.CostType = "E7 Day";
+                                            break;
+
+                                        case "CONSUMPTION_CHARGE_ECO7_NIGHT_B":
+                                            cd.CostType = "E7 Night";
+                                            break;
+
+                                        case "CONSUMPTION_CHARGE_EV_DEVICE_OFF_PEAK_B":
+                                            cd.CostType = "EV Off Peak";
+                                            break;
+
+                                        case "CONSUMPTION_CHARGE_EV_DEVICE_PEAK_B":
+                                            cd.CostType = "EV Peak";
+                                            break;
+
+                                        default:
+                                            cd.CostType = statistic.Label;
+                                            break;
+                                    }
+
+                                    costs.Costs.Add(cd);
+                                }
+                            }
+
+                            costsElectric.Add(costs);
+                        }
+
+                        sqLiteHelper.UpsertHalfHourlyCosts("Electric", costsElectric);
+                    }
+
+                    // Go back in time one day
+                    currentDay = currentDay.AddDays(-1);
+                }
 
                 return;
             }
@@ -315,7 +493,7 @@ namespace OctopusData.Forms
             }
         }
 
-        private async void OnClick_ChargingSessions(object sender, RoutedEventArgs e)
+        private async void OnClick_GetChargingSessionsAsync(object sender, RoutedEventArgs e)
         {
             SqLiteHelper sqLiteHelper = new SqLiteHelper(_account.Id, _logger);
 
@@ -326,8 +504,11 @@ namespace OctopusData.Forms
             {
                 var today = DateTime.Today;
 
+                SetStatusText($"Fetching Charge History ...");
+
                 var day = new DateTime(today.Year, today.Month, 01, 0, 0, 0, DateTimeKind.Local);
 
+                // ToDo: Add second condition to allow for fetching all time
                 while (day > _account.MovedIn)
                 {
                     SetStatusText($"Fetching Charge History for {day:yyyy-MM}");
@@ -434,114 +615,6 @@ namespace OctopusData.Forms
             }
         }
 
-        private async void OnClick_ReadUsageAsync(object sender, RoutedEventArgs e)
-        {
-            SqLiteHelper sqLiteHelper = new SqLiteHelper(_account.Id, _logger);
-
-            SetMouseCursor();
-            SetStateOfControls(false);
-
-            try
-            {
-                // Fetch Electric Usage
-                SetStatusText("Fetching Electric usage ...");
-
-                var currentDay = DateTime.UtcNow.Date;
-                // ToDo: Change second condition to allow for fetching all time
-                while (currentDay > _supplyDateElectric && currentDay > _lastDateElectric)
-                {
-                    var electric = await _httpHelper.ObtainElectricHalfHourlyUsageAsync(_account, currentDay);
-                    if (electric != null)
-                    {
-                        Debug.WriteLine($"Retrieved {electric.Results.Count} half-hourly electric records for {currentDay:d}.");
-
-                        if (electric.Results.Count > 0)
-                        {
-                            if (sqLiteHelper.CountHalfHourly(Constants.Electric,
-                                    currentDay.Year, currentDay.Month, currentDay.Day) != 48)
-                            {
-                                List<OctopusHalfHourly> octopusHalfHourlies = [];
-
-                                foreach (var electricResult in electric.Results)
-                                {
-                                    var octopusHalfHourly = new OctopusHalfHourly
-                                    {
-                                        Consumption = electricResult.Consumption,
-                                        Interval = new OctopusInterval
-                                        {
-                                            Start = electricResult.IntervalStart,
-                                            End = electricResult.IntervalEnd
-                                        }
-                                    };
-                                    octopusHalfHourlies.Add(octopusHalfHourly);
-                                }
-
-                                Debug.WriteLine($"Saving {electric.Results.Count} half-hourly electric records for {currentDay:d}.");
-                                sqLiteHelper.UpsertHalfHourly(Constants.Electric, octopusHalfHourlies);
-                            }
-                        }
-                    }
-
-                    // Go back in time one day
-                    currentDay = currentDay.AddDays(-1);
-                }
-
-                currentDay = DateTime.UtcNow.Date;
-
-                // Fetch Gas usage
-                SetStatusText("Fetching Gas usage ...");
-
-                // ToDo: Change second condition to allow for fetching all time
-                while (currentDay > _supplyDateGas && currentDay > _lastDateGas)
-                {
-                    var gas = await _httpHelper.ObtainGasHalfHourlyUsageAsync(_account, currentDay);
-                    if (gas != null)
-                    {
-                        Debug.WriteLine($"Retrieved {gas.Results.Count} half-hourly gas records for {currentDay:d}.");
-
-                        if (gas.Results.Count > 0)
-                        {
-                            if (sqLiteHelper.CountHalfHourly(Constants.Gas,
-                                    currentDay.Year, currentDay.Month, currentDay.Day) != 48)
-                            {
-                                List<OctopusHalfHourly> octopusHalfHourlies = [];
-
-                                foreach (var electricResult in gas.Results)
-                                {
-                                    var octopusHalfHourly = new OctopusHalfHourly
-                                    {
-                                        Consumption = electricResult.Consumption,
-                                        Interval = new OctopusInterval
-                                        {
-                                            Start = electricResult.IntervalStart,
-                                            End = electricResult.IntervalEnd
-                                        }
-                                    };
-                                    octopusHalfHourlies.Add(octopusHalfHourly);
-                                }
-
-                                Debug.WriteLine($"Saving {gas.Results.Count} half-hourly gas records for {currentDay:d}.");
-                                sqLiteHelper.UpsertHalfHourly(Constants.Gas, octopusHalfHourlies);
-                            }
-                        }
-                    }
-
-                    // Go back in time one day
-                    currentDay = currentDay.AddDays(-1);
-                }
-            }
-            catch (Exception exception)
-            {
-                _logger.WriteLine(exception.ToString());
-                MessageBox.Show(exception.ToString(), "Exception");
-            }
-            finally
-            {
-                ClearDown();
-                ShowAccountInfo();
-            }
-        }
-
         private void OnTextChanged_VisibleApiKey(object sender, TextChangedEventArgs e)
         {
             if (_isUpdating)
@@ -593,17 +666,30 @@ namespace OctopusData.Forms
             SetStatusText($"Account Id: {_account.Id}");
             var sqlite = new SqLiteHelper(_account.Id, _logger!);
 
-            var summary = sqlite.GetUsageInformation();
-            var electric = summary.FirstOrDefault(s => s.FuelType == Constants.Electric);
-            var gas = summary.FirstOrDefault(s => s.FuelType == Constants.Gas);
+            var summary = sqlite.GetSummaryInformation();
 
-            if (electric != null)
+            var electricConsumption = summary.FirstOrDefault(s => s is { FuelType: Constants.Electric, Metric: "Consumption" });
+            if (electricConsumption != null)
             {
-                _lastDateElectric = DateTime.ParseExact(electric.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+                _lastDateElectricConsumption = DateTime.ParseExact(electricConsumption.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
             }
-            if (gas != null)
+
+            var gasConsumption = summary.FirstOrDefault(s => s is { FuelType: Constants.Gas, Metric: "Consumption" });
+            if (gasConsumption != null)
             {
-                _lastDateGas = DateTime.ParseExact(gas.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+                _lastDateGasConsumption = DateTime.ParseExact(gasConsumption.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+            }
+
+            var electricCosts = summary.FirstOrDefault(s => s is { FuelType: Constants.Electric, Metric: "Costs" });
+            if (electricCosts != null)
+            {
+                _lastDateElectricCosts = DateTime.ParseExact(electricCosts.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+            }
+
+            var gasCosts = summary.FirstOrDefault(s => s is { FuelType: Constants.Gas, Metric: "Costs" });
+            if (gasCosts != null)
+            {
+                _lastDateGasCosts = DateTime.ParseExact(gasCosts.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
             }
 
             AccountStatistics.ItemsSource = summary;
@@ -650,9 +736,9 @@ namespace OctopusData.Forms
         private void SetStateOfControls(bool state)
         {
             StopWhen.IsEnabled = state;
-            ReadUsage.IsEnabled = state;
+            ReadConsumption.IsEnabled = state;
             ReadCosts.IsEnabled = state;
-            ChargingSessions.IsEnabled = state;
+            ReadChargingSessions.IsEnabled = state;
             ExportUsage.IsEnabled = state;
             CancelOperations.IsEnabled = !state;
         }

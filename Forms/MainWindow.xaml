@@ -95,7 +95,7 @@
                 Grid.Column="2"
                 Width="50"
                 Margin="2"
-                Click="OnClick_Login">
+                Click="OnClick_LoginAsync">
                 Login
             </Button>
         </Grid>
@@ -172,15 +172,15 @@
                 ToolTip="Select range of usage Data to fetch" />
 
             <Button
-                x:Name="ReadUsage"
+                x:Name="ReadConsumption"
                 Grid.Row="1"
                 Grid.Column="0"
                 Margin="0,1,1,1"
                 VerticalAlignment="Center"
-                Click="OnClick_ReadUsageAsync"
+                Click="OnClick_GetConsumptionAsync"
                 IsEnabled="False"
-                ToolTip="Get Usage Data for selected account">
-                Usage
+                ToolTip="Get Consumption Data for selected account">
+                Consumption
             </Button>
             <Button
                 x:Name="ReadCosts"
@@ -188,18 +188,18 @@
                 Grid.Column="1"
                 Margin="1"
                 VerticalAlignment="Center"
-                Click="OnClick_Costs"
+                Click="OnClick_GetCostsAsync"
                 IsEnabled="False"
                 ToolTip="Get Costs for selected account">
                 Costs
             </Button>
             <Button
-                x:Name="ChargingSessions"
+                x:Name="ReadChargingSessions"
                 Grid.Row="1"
                 Grid.Column="2"
                 Margin="1"
                 VerticalAlignment="Center"
-                Click="OnClick_ChargingSessions"
+                Click="OnClick_GetChargingSessionsAsync"
                 IsEnabled="False"
                 ToolTip="Get EV Charging Events for selected account">
                 Charge Events

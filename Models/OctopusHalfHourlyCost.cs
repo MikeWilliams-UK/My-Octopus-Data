@@ -1,6 +1,6 @@
 ﻿namespace OctopusData.Models;
 
-public class OctopusHalfHourlyElectricCosts
+public class OctopusHalfHourlyCost
 {
     public OctopusInterval Interval { get; set; } = new();
 
@@ -20,10 +20,10 @@ public class OctopusCostData
 
     public double Consumption { get; set; }
 
-    public double UnitRateIncludingVat { get; set; }
+    public double RateIncludingVat { get; set; }
     public double CostIncludingVat { get; set; }
 
-    public double UnitRateExcludingVat { get; set; }
+    public double RateExcludingVat { get; set; }
     public double CostExcludingVat { get; set; }
 
     public override string ToString()
