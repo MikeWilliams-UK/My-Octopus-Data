@@ -7,12 +7,12 @@ public static class ResourceHelper
 {
     public static string GetStringResource(string resourceName)
     {
-        var data = string.Empty;
+        string data = string.Empty;
 
-        var resource = GetBinaryResource(resourceName);
+        Stream? resource = GetBinaryResource(resourceName);
         if (resource != null)
         {
-            var textStreamReader = new StreamReader(resource);
+            StreamReader textStreamReader = new StreamReader(resource);
             data = textStreamReader.ReadToEnd();
         }
 
@@ -21,15 +21,15 @@ public static class ResourceHelper
 
     private static Stream? GetBinaryResource(string resourceName)
     {
-        var assembly = Assembly.GetExecutingAssembly();
+        Assembly assembly = Assembly.GetExecutingAssembly();
 
-        var data = Stream.Null;
+        Stream? data = Stream.Null;
 
-        var fullName = string.Empty;
-        var count = 0;
+        string fullName = string.Empty;
+        int count = 0;
 
-        var resources = assembly.GetManifestResourceNames();
-        foreach (var s in resources)
+        string[] resources = assembly.GetManifestResourceNames();
+        foreach (string s in resources)
         {
             if (s.EndsWith($".{resourceName}"))
             {

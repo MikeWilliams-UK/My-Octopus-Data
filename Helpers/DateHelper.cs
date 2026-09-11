@@ -49,26 +49,26 @@ public static class DateHelper
 
     public static string StartOfToday(DateTime date)
     {
-        var day = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0, DateTimeKind.Utc);
+        DateTime day = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0, DateTimeKind.Utc);
         return $"{day:yyyy-MM-ddTHH:mm:ss.fffZ}";
     }
 
     public static string StartOfTomorrow(DateTime date)
     {
-        var day = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0, DateTimeKind.Utc);
+        DateTime day = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0, DateTimeKind.Utc);
         day = day.AddDays(1);
         return $"{day:yyyy-MM-ddTHH:mm:ss.fffZ}";
     }
 
     public static string FirstDayOfThisMonth(DateTime date)
     {
-        var day = new DateTime(date.Year, date.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        DateTime day = new DateTime(date.Year, date.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         return $"{day:yyyy-MM-ddTHH:mm:ss.fffZ}";
     }
 
     public static string FirstDayOfNextMonth(DateTime date, bool endOfDay)
     {
-        var day = new DateTime(date.Year, date.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        DateTime day = new DateTime(date.Year, date.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         day = day.AddMonths(1);
         if (endOfDay)
         {

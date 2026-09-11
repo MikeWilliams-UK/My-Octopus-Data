@@ -1,25 +1,26 @@
 ﻿using OctopusData.Models;
 using System.Data.SQLite;
-using System.Diagnostics;
 using System.Text;
 
 namespace OctopusData.Helpers;
 
 public partial class SqLiteHelper
 {
-    public void UpsertHalfHourlyCosts(string fuelType, List<OctopusHalfHourlyCost> items)
+    public int UpsertHalfHourlyCosts(string fuelType, List<OctopusHalfHourlyCost> items)
     {
-        using (var connection = GetConnection())
+        using (SQLiteConnection connection = GetConnection())
         {
-            var transaction = connection.BeginTransaction();
+            int upserted = 0;
 
-            foreach (var item in items)
+            SQLiteTransaction? transaction = connection.BeginTransaction();
+
+            foreach (OctopusHalfHourlyCost item in items)
             {
-                foreach (var cost in item.Costs)
+                foreach (OctopusCostData cost in item.Costs)
                 {
-                    var stringBuilder = new StringBuilder();
+                    StringBuilder stringBuilder = new StringBuilder();
 
-                    var timeStamp = DateHelper.SortableTimeAndTime(item.Interval.Start);
+                    string timeStamp = DateHelper.SortableTimeAndTime(item.Interval.Start);
 
                     stringBuilder.AppendLine($"INSERT INTO HalfHourlyCosts{fuelType}");
                     stringBuilder.AppendLine("VALUES");
@@ -31,13 +32,14 @@ public partial class SqLiteHelper
                     stringBuilder.AppendLine("DO UPDATE SET");
                     stringBuilder.AppendLine("Consumption = excluded.Consumption, RateExcVat = excluded.RateExcVat, CostExcVat = excluded.CostExcVat, RateIncVat = excluded.RateIncVat, CostIncVat = excluded.CostIncVat");
 
-                    Debug.WriteLine(stringBuilder.ToString());
-                    var command = new SQLiteCommand(stringBuilder.ToString(), connection);
-                    command.ExecuteNonQuery();
+                    SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
+                    upserted += command.ExecuteNonQuery();
                 }
             }
 
             transaction.Commit();
+
+            return upserted;
         }
     }
 }

@@ -20,7 +20,7 @@ public class Logger
     {
         if (!string.IsNullOrEmpty(message))
         {
-            using (var streamWriter = File.AppendText(GetFileName()))
+            using (StreamWriter streamWriter = File.AppendText(GetFileName()))
             {
                 streamWriter.WriteLine($"{DateHelper.LogEntryTimestamp()} - {message}");
                 Debug.WriteLine(message);
@@ -30,21 +30,21 @@ public class Logger
 
     private string GetFileName()
     {
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Constants.ApplicationName);
+        string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Constants.ApplicationName);
 
         if (!Directory.Exists(Path.Combine(folder, "Logs")))
         {
             Directory.CreateDirectory(Path.Combine(folder, "Logs"));
         }
 
-        var fileName = Path.Combine(folder, "Logs", $"{DateHelper.LogFileSuffix(_suffix)}.log");
+        string fileName = Path.Combine(folder, "Logs", $"{DateHelper.LogFileSuffix(_suffix)}.log");
 
         return fileName;
     }
 
     private string JsonPrettify(string json)
     {
-        using var jDoc = JsonDocument.Parse(json);
+        using JsonDocument jDoc = JsonDocument.Parse(json);
         return JsonSerializer.Serialize(jDoc, new JsonSerializerOptions
         {
             WriteIndented = true,
@@ -54,14 +54,14 @@ public class Logger
 
     public void DumpJson(string responseType, string json)
     {
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Constants.ApplicationName);
+        string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Constants.ApplicationName);
 
         if (!Directory.Exists(Path.Combine(folder, "Dump")))
         {
             Directory.CreateDirectory(Path.Combine(folder, "Dump"));
         }
 
-        var fileName = Path.Combine(folder, "Dump", $"{DateHelper.LogFileSuffix()} {responseType}.json");
+        string fileName = Path.Combine(folder, "Dump", $"{DateHelper.LogFileSuffix()} {responseType}.json");
 
         File.WriteAllText(fileName, JsonPrettify(json));
     }

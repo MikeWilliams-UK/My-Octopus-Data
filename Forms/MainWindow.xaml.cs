@@ -5,6 +5,9 @@ using OctopusData.Models;
 using OctopusData.Models.Account;
 using OctopusData.Models.Charging.Devices;
 using OctopusData.Models.Charging.Sessions;
+using OctopusData.Models.ElectricCost;
+using OctopusData.Models.GasCost;
+using OctopusData.Models.Usage;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -12,8 +15,12 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Agreement = OctopusData.Models.Account.Agreement;
 using Device = OctopusData.Models.Charging.Devices.Device;
 using Edge = OctopusData.Models.Charging.Sessions.Edge;
+using ElectricityMeterPoint = OctopusData.Models.Account.ElectricityMeterPoint;
+using Property = OctopusData.Models.Account.Property;
+using Statistic = OctopusData.Models.GasCost.Statistic;
 
 namespace OctopusData.Forms
 {
@@ -84,7 +91,7 @@ namespace OctopusData.Forms
 
                 SetStatusText("Connecting ...");
 
-                var details = await _httpHelper.LoginAsync();
+                Details? details = await _httpHelper.LoginAsync();
                 if (details != null)
                 {
                     SetStatusText($"Logged in to Account {AccountId.Text}");
@@ -92,18 +99,18 @@ namespace OctopusData.Forms
 
                     if (details.Properties.Count == 1)
                     {
-                        var property = details.Properties[0];
+                        Property property = details.Properties[0];
                         _account.MovedIn = property.MovedInAt;
-                        var octopusProperty = new OctopusProperty
+                        OctopusProperty octopusProperty = new OctopusProperty
                         {
                             Id = property.Id
                         };
                         sqLiteHelper.UpsertProperty(octopusProperty);
 
                         // Handle Electricity
-                        foreach (var meterPoint in property.ElectricityMeterPoints)
+                        foreach (ElectricityMeterPoint meterPoint in property.ElectricityMeterPoints)
                         {
-                            var octopusMeterPoint = new OctopusMeterPoint
+                            OctopusMeterPoint octopusMeterPoint = new OctopusMeterPoint
                             {
                                 Mpxn = meterPoint.Mpan,
                                 FuelType = Constants.Electric,
@@ -113,9 +120,9 @@ namespace OctopusData.Forms
                             sqLiteHelper.UpsertMeterPoints(octopusMeterPoint);
 
                             _account.ElectricMpan = meterPoint.Mpan;
-                            foreach (var meter in meterPoint.Meters)
+                            foreach (Meter meter in meterPoint.Meters)
                             {
-                                var octopusMeter = new OctopusMeter
+                                OctopusMeter octopusMeter = new OctopusMeter
                                 {
                                     SerialNumber = meter.SerialNumber,
                                     FuelType = Constants.Electric
@@ -124,7 +131,7 @@ namespace OctopusData.Forms
 
                                 foreach (Register register in meter.Registers)
                                 {
-                                    var octopusMeterRegister = new OctopusMeterRegister
+                                    OctopusMeterRegister octopusMeterRegister = new OctopusMeterRegister
                                     {
                                         Id = register.Identifier,
                                         Rate = register.Rate,
@@ -136,9 +143,9 @@ namespace OctopusData.Forms
                                 _account.ElectricMeterSerial = meter.SerialNumber;
                             }
 
-                            foreach (var agreement in meterPoint.Agreements)
+                            foreach (Agreement agreement in meterPoint.Agreements)
                             {
-                                var octopusAgreement = new OctopusAgreement
+                                OctopusAgreement octopusAgreement = new OctopusAgreement
                                 {
                                     StartDate = agreement.ValidFrom,
                                     EndDate = agreement.ValidTo,
@@ -155,9 +162,9 @@ namespace OctopusData.Forms
                         }
 
                         // Handle Gas
-                        foreach (var meterPoint in property.GasMeterPoints)
+                        foreach (GasMeterPoint meterPoint in property.GasMeterPoints)
                         {
-                            var octopusMeterPoint = new OctopusMeterPoint
+                            OctopusMeterPoint octopusMeterPoint = new OctopusMeterPoint
                             {
                                 Mpxn = meterPoint.Mprn,
                                 FuelType = Constants.Gas,
@@ -167,9 +174,9 @@ namespace OctopusData.Forms
 
                             _account.GasMprn = meterPoint.Mprn;
 
-                            foreach (var meter in meterPoint.Meters)
+                            foreach (Meter meter in meterPoint.Meters)
                             {
-                                var octopusMeter = new OctopusMeter
+                                OctopusMeter octopusMeter = new OctopusMeter
                                 {
                                     SerialNumber = meter.SerialNumber,
                                     FuelType = Constants.Gas
@@ -179,9 +186,9 @@ namespace OctopusData.Forms
                                 _account.GasMeterSerial = meter.SerialNumber;
                             }
 
-                            foreach (var agreement in meterPoint.Agreements)
+                            foreach (Agreement agreement in meterPoint.Agreements)
                             {
-                                var octopusAgreement = new OctopusAgreement
+                                OctopusAgreement octopusAgreement = new OctopusAgreement
                                 {
                                     StartDate = agreement.ValidFrom,
                                     EndDate = agreement.ValidTo,
@@ -218,14 +225,14 @@ namespace OctopusData.Forms
             {
                 SetStatusText("Fetching Electric Consumption ...");
 
-                var currentDay = DateTime.UtcNow.Date;
+                DateTime currentDay = DateTime.UtcNow.Date;
 
                 // ToDo: Change second condition to allow for fetching all time
                 while (currentDay > _supplyDateElectric && currentDay > _lastDateElectricConsumption)
                 {
                     SetStatusText($"Fetching Electric Consumption for {currentDay:yyyy-MM-dd}");
 
-                    var electric = await _httpHelper.ObtainElectricHalfHourlyConsumptionAsync(_account, currentDay);
+                    Usage? electric = await _httpHelper.ObtainElectricHalfHourlyConsumptionAsync(_account, currentDay);
                     if (electric != null)
                     {
                         Debug.WriteLine($"Retrieved {electric.Results.Count} half-hourly electric records for {currentDay:d}.");
@@ -237,9 +244,9 @@ namespace OctopusData.Forms
                             {
                                 List<OctopusHalfHourlyConsumption> octopusHalfHourlies = [];
 
-                                foreach (var electricResult in electric.Results)
+                                foreach (Result electricResult in electric.Results)
                                 {
-                                    var octopusHalfHourly = new OctopusHalfHourlyConsumption
+                                    OctopusHalfHourlyConsumption octopusHalfHourly = new OctopusHalfHourlyConsumption
                                     {
                                         Consumption = electricResult.Consumption,
                                         Interval = new OctopusInterval
@@ -270,7 +277,7 @@ namespace OctopusData.Forms
                 {
                     SetStatusText($"Fetching Gas Consumption for {currentDay:yyyy-MM-dd}");
 
-                    var gas = await _httpHelper.ObtainGasHalfHourlyConsumptionAsync(_account, currentDay);
+                    Usage? gas = await _httpHelper.ObtainGasHalfHourlyConsumptionAsync(_account, currentDay);
                     if (gas != null)
                     {
                         Debug.WriteLine($"Retrieved {gas.Results.Count} half-hourly gas records for {currentDay:d}.");
@@ -282,9 +289,9 @@ namespace OctopusData.Forms
                             {
                                 List<OctopusHalfHourlyConsumption> octopusHalfHourlies = [];
 
-                                foreach (var electricResult in gas.Results)
+                                foreach (Result electricResult in gas.Results)
                                 {
-                                    var octopusHalfHourly = new OctopusHalfHourlyConsumption
+                                    OctopusHalfHourlyConsumption octopusHalfHourly = new OctopusHalfHourlyConsumption
                                     {
                                         Consumption = electricResult.Consumption,
                                         Interval = new OctopusInterval
@@ -327,7 +334,7 @@ namespace OctopusData.Forms
                 SetMouseCursor();
                 SetStateOfControls(false);
 
-                var currentDay = DateTime.UtcNow.Date;
+                DateTime currentDay = DateTime.UtcNow.Date;
 
                 SetStatusText("Fetching Gas Costs ...");
 
@@ -338,12 +345,12 @@ namespace OctopusData.Forms
 
                     SetStatusText($"Fetching Gas Costs for {currentDay:yyyy-MM-dd}");
 
-                    var jsonGas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, currentDay);
-                    if (jsonGas != null)
+                    GasCosts? gasCosts = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, currentDay);
+                    if (gasCosts != null)
                     {
-                        foreach (var edge in jsonGas.Data.Account.Properties[0].Measurements.Edges)
+                        foreach (Models.GasCost.Edge edge in gasCosts.Data.Account.Properties[0].Measurements.Edges)
                         {
-                            var costs = new OctopusHalfHourlyCost
+                            OctopusHalfHourlyCost costs = new OctopusHalfHourlyCost
                             {
                                 Interval = new OctopusInterval
                                 {
@@ -353,11 +360,11 @@ namespace OctopusData.Forms
                                 Consumption = double.Parse(edge.Node.Value)
                             };
 
-                            foreach (var statistic in edge.Node.MetaData.Statistics)
+                            foreach (Statistic statistic in edge.Node.MetaData.Statistics)
                             {
                                 if (statistic.Type.Equals("STANDING_CHARGE_COST"))
                                 {
-                                    var cd = new OctopusCostData
+                                    OctopusCostData cd = new OctopusCostData
                                     {
                                         CostType = "Standing Charge",
                                         CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
@@ -368,7 +375,7 @@ namespace OctopusData.Forms
                                 }
                                 else
                                 {
-                                    var cd = new OctopusCostData
+                                    OctopusCostData cd = new OctopusCostData
                                     {
                                         CostType = "Gas",
                                         Consumption = double.Parse(edge.Node.Value),
@@ -383,7 +390,10 @@ namespace OctopusData.Forms
                             costsGas.Add(costs);
                         }
 
-                        sqLiteHelper.UpsertHalfHourlyCosts("Gas", costsGas);
+                        if (costsGas.Count > 0)
+                        {
+                            sqLiteHelper.UpsertHalfHourlyCosts("Gas", costsGas);
+                        }
                     }
 
                     // Go back in time one day
@@ -401,99 +411,96 @@ namespace OctopusData.Forms
 
                     SetStatusText($"Fetching Electricity Costs for {currentDay:yyyy-MM-dd}");
 
-                    if (currentDay < new DateTime(2026, 08, 03, 0, 0, 0, DateTimeKind.Utc))
+                    ElectricCosts? electricCosts = await _httpHelper.ObtainElectricUsageCostsAsync(_account, currentDay);
+                    if (electricCosts != null)
                     {
-                        // Fetching of electricity costs only works from 03/08/2026 onwards
-                        break;
-                    }
-                    else
-                    {
-                        var jsonElectric = await _httpHelper.ObtainElectricUsageCostsAsync(_account, currentDay);
-                        if (jsonElectric != null)
+                        foreach (Models.ElectricCost.Edge edge in electricCosts.Data.Account.Properties[0].Measurements.Edges)
                         {
-                            foreach (var edge in jsonElectric.Data.Account.Properties[0].Measurements.Edges)
+                            OctopusHalfHourlyCost costs = new OctopusHalfHourlyCost
                             {
-                                var costs = new OctopusHalfHourlyCost
+                                Interval = new OctopusInterval
                                 {
-                                    Interval = new OctopusInterval
-                                    {
-                                        Start = edge.Node.StartAt,
-                                        End = edge.Node.EndAt
-                                    },
-                                    Consumption = double.Parse(edge.Node.Value)
-                                };
+                                    Start = edge.Node.StartAt,
+                                    End = edge.Node.EndAt
+                                },
+                                Consumption = double.Parse(edge.Node.Value)
+                            };
 
-                                foreach (var statistic in edge.Node.MetaData.Statistics)
+                            foreach (Models.ElectricCost.Statistic statistic in edge.Node.MetaData.Statistics)
+                            {
+                                if (statistic.Type.Equals("STANDING_CHARGE_COST"))
                                 {
-                                    if (statistic.Type.Equals("STANDING_CHARGE_COST"))
+                                    OctopusCostData cd = new OctopusCostData
                                     {
-                                        var cd = new OctopusCostData
-                                        {
-                                            CostType = "Standing Charge",
-                                            CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                            CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
-                                        };
+                                        CostType = "Standing Charge",
+                                        RateExcludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount),
+                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        RateIncludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                    };
 
-                                        costs.Costs.Add(cd);
-                                    }
-                                    else
-                                    {
-                                        var cd = new OctopusCostData
-                                        {
-                                            RateExcludingVat = double.Parse(statistic.CostExclTax.PricePerUnit.Amount),
-                                            CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                            RateIncludingVat = double.Parse(statistic.CostInclTax.PricePerUnit.Amount),
-                                            CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
-                                        };
-
-                                        if (!string.IsNullOrEmpty(statistic.Value))
-                                        {
-                                            cd.Consumption = double.Parse(statistic.Value);
-                                        }
-
-                                        switch (statistic.Label)
-                                        {
-                                            case "CONSUMPTION_CHARGE_ECO7_DAY_B":
-                                                cd.CostType = "E7 Day";
-                                                break;
-
-                                            case "CONSUMPTION_CHARGE_ECO7_NIGHT_B":
-                                                cd.CostType = "E7 Night";
-                                                break;
-
-                                            case "CONSUMPTION_CHARGE_EV_DEVICE_OFF_PEAK_B":
-                                                cd.CostType = "EV Off Peak";
-                                                break;
-
-                                            case "CONSUMPTION_CHARGE_EV_DEVICE_PEAK_B":
-                                                cd.CostType = "EV Peak";
-                                                break;
-
-                                            default:
-                                                cd.CostType = statistic.Label;
-                                                break;
-                                        }
-
-                                        costs.Costs.Add(cd);
-                                    }
+                                    costs.Costs.Add(cd);
                                 }
+                                else
+                                {
+                                    OctopusCostData cd = new OctopusCostData
+                                    {
+                                        RateExcludingVat = double.Parse(statistic.CostExclTax.PricePerUnit.Amount),
+                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        RateIncludingVat = double.Parse(statistic.CostInclTax.PricePerUnit.Amount),
+                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                    };
 
-                                costsElectric.Add(costs);
+                                    if (!string.IsNullOrEmpty(statistic.Value))
+                                    {
+                                        cd.Consumption = double.Parse(statistic.Value);
+                                    }
+
+                                    switch (statistic.Label)
+                                    {
+                                        case "CONSUMPTION_CHARGE_ECO7_DAY_B":
+                                            cd.CostType = "Day";
+                                            break;
+
+                                        case "CONSUMPTION_CHARGE_ECO7_NIGHT_B":
+                                            cd.CostType = "Night";
+                                            break;
+
+                                        case "CONSUMPTION_CHARGE_EV_DEVICE_OFF_PEAK_B":
+                                            cd.CostType = "EV Off Peak";
+                                            break;
+
+                                        case "CONSUMPTION_CHARGE_EV_DEVICE_PEAK_B":
+                                            cd.CostType = "EV Peak";
+                                            break;
+
+                                        default:
+                                            cd.CostType = statistic.Label;
+                                            Debugger.Break();
+                                            break;
+                                    }
+
+                                    costs.Costs.Add(cd);
+                                }
                             }
 
-                            sqLiteHelper.UpsertHalfHourlyCosts("Electric", costsElectric);
+                            costsElectric.Add(costs);
                         }
-                        else
+
+                        if (costsElectric.Count > 0)
                         {
-                            Debugger.Break();
+                            int upserted = sqLiteHelper.UpsertHalfHourlyCosts("Electric", costsElectric);
+                            if (upserted == 0)
+                            {
+                                // We have exhausted all "new" costs (i.e. date is before 03/08/2026)
+                                break;
+                            }
                         }
                     }
 
                     // Go back in time one day
                     currentDay = currentDay.AddDays(-1);
                 }
-
-                return;
             }
             catch (Exception exception)
             {
@@ -516,11 +523,11 @@ namespace OctopusData.Forms
 
             try
             {
-                var today = DateTime.Today;
+                DateTime today = DateTime.Today;
 
                 SetStatusText($"Fetching Charge History ...");
 
-                var day = new DateTime(today.Year, today.Month, 01, 0, 0, 0, DateTimeKind.Local);
+                DateTime day = new DateTime(today.Year, today.Month, 01, 0, 0, 0, DateTimeKind.Local);
 
                 // ToDo: Add second condition to allow for fetching all time
                 while (day > _account.MovedIn)
@@ -678,29 +685,29 @@ namespace OctopusData.Forms
         private void ShowAccountInfo()
         {
             SetStatusText($"Account Id: {_account.Id}");
-            var sqlite = new SqLiteHelper(_account.Id, _logger!);
+            SqLiteHelper sqlite = new SqLiteHelper(_account.Id, _logger!);
 
-            var summary = sqlite.GetSummaryInformation();
+            List<MySummary> summary = sqlite.GetSummaryInformation();
 
-            var electricConsumption = summary.FirstOrDefault(s => s is { FuelType: Constants.Electric, Metric: "Consumption" });
+            MySummary? electricConsumption = summary.FirstOrDefault(s => s is { FuelType: Constants.Electric, Metric: "Consumption" });
             if (electricConsumption != null)
             {
                 _lastDateElectricConsumption = DateTime.ParseExact(electricConsumption.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
             }
 
-            var gasConsumption = summary.FirstOrDefault(s => s is { FuelType: Constants.Gas, Metric: "Consumption" });
+            MySummary? gasConsumption = summary.FirstOrDefault(s => s is { FuelType: Constants.Gas, Metric: "Consumption" });
             if (gasConsumption != null)
             {
                 _lastDateGasConsumption = DateTime.ParseExact(gasConsumption.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
             }
 
-            var electricCosts = summary.FirstOrDefault(s => s is { FuelType: Constants.Electric, Metric: "Costs" });
+            MySummary? electricCosts = summary.FirstOrDefault(s => s is { FuelType: Constants.Electric, Metric: "Costs" });
             if (electricCosts != null)
             {
                 _lastDateElectricCosts = DateTime.ParseExact(electricCosts.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
             }
 
-            var gasCosts = summary.FirstOrDefault(s => s is { FuelType: Constants.Gas, Metric: "Costs" });
+            MySummary? gasCosts = summary.FirstOrDefault(s => s is { FuelType: Constants.Gas, Metric: "Costs" });
             if (gasCosts != null)
             {
                 _lastDateGasCosts = DateTime.ParseExact(gasCosts.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
@@ -759,7 +766,7 @@ namespace OctopusData.Forms
 
         private void ReadFromRegistry()
         {
-            var key = Registry.CurrentUser.OpenSubKey(@$"SOFTWARE\{Constants.ApplicationName}");
+            RegistryKey? key = Registry.CurrentUser.OpenSubKey(@$"SOFTWARE\{Constants.ApplicationName}");
             if (key != null)
             {
                 AccountId.Text = key.GetValue("AccountId")?.ToString();
@@ -769,7 +776,7 @@ namespace OctopusData.Forms
 
         private void WriteToRegistry()
         {
-            var key = Registry.CurrentUser.CreateSubKey(@$"SOFTWARE\{Constants.ApplicationName}");
+            RegistryKey key = Registry.CurrentUser.CreateSubKey(@$"SOFTWARE\{Constants.ApplicationName}");
 
             key.SetValue("AccountId", AccountId.Text);
             key.SetValue("Api-Key", ApiKey.Password);

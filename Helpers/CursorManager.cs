@@ -12,7 +12,7 @@ public static class CursorManager
         _originalOverride = Mouse.OverrideCursor;
         Mouse.OverrideCursor = Cursors.Wait;
 
-        foreach (var control in exceptions)
+        foreach (UIElement control in exceptions)
         {
             control.MouseEnter += SuppressOverride;
             control.MouseLeave += RestoreOverride;
@@ -23,7 +23,7 @@ public static class CursorManager
     {
         Mouse.OverrideCursor = null;
 
-        foreach (var control in exceptions)
+        foreach (UIElement control in exceptions)
         {
             control.MouseEnter -= SuppressOverride;
             control.MouseLeave -= RestoreOverride;

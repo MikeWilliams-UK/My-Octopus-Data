@@ -8,17 +8,17 @@ public partial class SqLiteHelper
 {
     public int CountHalfHourly(string fuelTYpe, int year, int month, int day)
     {
-        var result = 0;
+        int result = 0;
 
-        using (var connection = GetConnection())
+        using (SQLiteConnection connection = GetConnection())
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("SELECT COUNT(1)");
             stringBuilder.AppendLine($"FROM HalfHourlyConsumption{fuelTYpe}");
             stringBuilder.AppendLine($"WHERE StartTime LIKE '{year}-{month:D2}-{day:D2}%'");
 
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
             result = Convert.ToInt32(command.ExecuteScalar());
 
             _logger.WriteLine($"  Table Daily{fuelTYpe} has {result} records like '{year}-{month:D2}-{day:D2}%'");
@@ -29,15 +29,15 @@ public partial class SqLiteHelper
 
     public void UpsertHalfHourlyConsumption(string fuelType, List<OctopusHalfHourlyConsumption> items)
     {
-        using (var connection = GetConnection())
+        using (SQLiteConnection connection = GetConnection())
         {
-            var transaction = connection.BeginTransaction();
+            SQLiteTransaction? transaction = connection.BeginTransaction();
 
-            foreach (var item in items)
+            foreach (OctopusHalfHourlyConsumption item in items)
             {
-                var stringBuilder = new StringBuilder();
+                StringBuilder stringBuilder = new StringBuilder();
 
-                var timeStamp = DateHelper.SortableTimeAndTime(item.Interval.Start);
+                string timeStamp = DateHelper.SortableTimeAndTime(item.Interval.Start);
 
                 stringBuilder.AppendLine($"INSERT INTO HalfHourlyConsumption{fuelType}");
                 stringBuilder.AppendLine("VALUES");
@@ -45,7 +45,7 @@ public partial class SqLiteHelper
                 stringBuilder.AppendLine("ON CONFLICT (StartTime)");
                 stringBuilder.AppendLine("DO UPDATE SET Consumption = excluded.Consumption");
 
-                var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+                SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
                 command.ExecuteNonQuery();
             }
 
@@ -55,25 +55,25 @@ public partial class SqLiteHelper
 
     public List<OctopusHalfHourlyConsumption> FetchHalfHourly(string fuelType)
     {
-        var result = new List<OctopusHalfHourlyConsumption>();
+        List<OctopusHalfHourlyConsumption> result = new List<OctopusHalfHourlyConsumption>();
 
-        using (var connection = GetConnection())
+        using (SQLiteConnection connection = GetConnection())
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("SELECT StartTime, Consumption");
             stringBuilder.AppendLine($"FROM HalfHourlyConsumption{fuelType}");
             stringBuilder.AppendLine("ORDER BY StartTime DESC");
 
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
 
-            using (var reader = command.ExecuteReader())
+            using (SQLiteDataReader? reader = command.ExecuteReader())
             {
                 if (reader != null)
                 {
                     while (reader.Read())
                     {
-                        var dto = new OctopusHalfHourlyConsumption
+                        OctopusHalfHourlyConsumption dto = new OctopusHalfHourlyConsumption
                         {
                             Consumption = FieldAsDouble(reader["Consumption"]),
                             Interval = new OctopusInterval { Start = FieldAsTime(reader["StartTime"]) }

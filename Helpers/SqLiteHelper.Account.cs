@@ -8,9 +8,9 @@ public partial class SqLiteHelper
 {
     public void UpsertProperty(OctopusProperty property)
     {
-        using (var connection = GetConnection())
+        using (SQLiteConnection connection = GetConnection())
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("INSERT INTO Properties");
             stringBuilder.AppendLine("VALUES");
@@ -18,16 +18,16 @@ public partial class SqLiteHelper
             stringBuilder.AppendLine("ON CONFLICT (Id)");
             stringBuilder.AppendLine("DO UPDATE SET Id = excluded.Id");
 
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
             command.ExecuteNonQuery();
         }
     }
 
     public void UpsertMeterPoints(OctopusMeterPoint meterPoint)
     {
-        using (var connection = GetConnection())
+        using (SQLiteConnection connection = GetConnection())
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("INSERT INTO MeterPoints");
             stringBuilder.AppendLine("VALUES");
@@ -35,16 +35,16 @@ public partial class SqLiteHelper
             stringBuilder.AppendLine("ON CONFLICT (Mpxn)");
             stringBuilder.AppendLine("DO UPDATE SET Mpxn = excluded.Mpxn, FuelType = excluded.FuelType, ProfileClass = excluded.ProfileClass, ConsumptionStandard = excluded.ConsumptionStandard");
 
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
             command.ExecuteNonQuery();
         }
     }
 
     public void UpsertMeter(OctopusMeter meter)
     {
-        using (var connection = GetConnection())
+        using (SQLiteConnection connection = GetConnection())
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("INSERT INTO Meters");
             stringBuilder.AppendLine("VALUES");
@@ -52,16 +52,16 @@ public partial class SqLiteHelper
             stringBuilder.AppendLine("ON CONFLICT (SerialNumber)");
             stringBuilder.AppendLine("DO UPDATE SET SerialNumber = excluded.SerialNumber, FuelType = excluded.FuelType");
 
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
             command.ExecuteNonQuery();
         }
     }
 
     public void UpsertAgreements(OctopusAgreement agreement)
     {
-        using (var connection = GetConnection())
+        using (SQLiteConnection connection = GetConnection())
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("INSERT INTO Agreements");
             stringBuilder.AppendLine("VALUES");
@@ -70,16 +70,16 @@ public partial class SqLiteHelper
             stringBuilder.AppendLine("DO UPDATE SET");
             stringBuilder.AppendLine("StartDate = excluded.StartDate, EndDate = excluded.EndDate, FuelType = excluded.FuelType, TariffCode = excluded.TariffCode");
 
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
             command.ExecuteNonQuery();
         }
     }
 
     public void UpsertMeterRegisters(OctopusMeterRegister register)
     {
-        using (var connection = GetConnection())
+        using (SQLiteConnection connection = GetConnection())
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("INSERT INTO MeterRegisters");
             stringBuilder.AppendLine("VALUES");
@@ -88,7 +88,7 @@ public partial class SqLiteHelper
             stringBuilder.AppendLine("DO UPDATE SET");
             stringBuilder.AppendLine("Id = excluded.Id, Rate = excluded.Rate, FuelType = excluded.FuelType");
 
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
             command.ExecuteNonQuery();
         }
     }

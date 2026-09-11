@@ -47,10 +47,10 @@ namespace OctopusData.Helpers
         {
             _saveResponses = ConfigHelper.GetBoolean(_configuration, "SaveResponses", false);
 
-            var uri = ConfigHelper.GetString(_configuration, "LoginUri", string.Empty);
+            string uri = ConfigHelper.GetString(_configuration, "LoginUri", string.Empty);
             if (!string.IsNullOrEmpty(uri))
             {
-                var requestUri = string.Format(uri, _accountId);
+                string requestUri = string.Format(uri, _accountId);
 
                 return await GetWithRedirect<Details>(requestUri, "Login");
             }
@@ -64,8 +64,8 @@ namespace OctopusData.Helpers
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
-            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.GasCosts.query").Split(Environment.NewLine));
-            var graphQl = ResourceHelper.GetStringResource("GraphQL.GasCosts.json");
+            string query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.GasCosts.query").Split(Environment.NewLine));
+            string graphQl = ResourceHelper.GetStringResource("GraphQL.GasCosts.json");
 
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
@@ -83,8 +83,8 @@ namespace OctopusData.Helpers
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
-            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ElectricCostsV1.query").Split(Environment.NewLine));
-            var graphQl = ResourceHelper.GetStringResource("GraphQL.ElectricCostsV1.json");
+            string query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ElectricCostsV1.query").Split(Environment.NewLine));
+            string graphQl = ResourceHelper.GetStringResource("GraphQL.ElectricCostsV1.json");
 
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
@@ -102,8 +102,8 @@ namespace OctopusData.Helpers
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
-            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ElectricCostsV2.query").Split(Environment.NewLine));
-            var graphQl = ResourceHelper.GetStringResource("GraphQL.ElectricCostsV2.json");
+            string query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ElectricCostsV2.query").Split(Environment.NewLine));
+            string graphQl = ResourceHelper.GetStringResource("GraphQL.ElectricCostsV2.json");
 
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
@@ -125,8 +125,8 @@ namespace OctopusData.Helpers
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
-            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.Chargers.query").Split(Environment.NewLine));
-            var graphQl = ResourceHelper.GetStringResource("GraphQL.Chargers.json");
+            string query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.Chargers.query").Split(Environment.NewLine));
+            string graphQl = ResourceHelper.GetStringResource("GraphQL.Chargers.json");
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
                 .Replace("[[StartOfMonth]]", DateHelper.FirstDayOfThisMonth(requestedDate))
@@ -142,8 +142,8 @@ namespace OctopusData.Helpers
         {
             string requestUri = "https://api.octopus.energy/v1/graphql/";
 
-            var query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ChargeHistory.query").Split(Environment.NewLine));
-            var graphQl = ResourceHelper.GetStringResource("GraphQL.ChargeHistory.json");
+            string query = string.Join("\\n", ResourceHelper.GetStringResource("GraphQL.ChargeHistory.query").Split(Environment.NewLine));
+            string graphQl = ResourceHelper.GetStringResource("GraphQL.ChargeHistory.json");
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
                 .Replace("[[StartOfMonth]]", DateHelper.FirstDayOfThisMonth(requestedDate))
@@ -162,11 +162,11 @@ namespace OctopusData.Helpers
 
         public async Task<Usage?> ObtainElectricHalfHourlyConsumptionAsync(OctopusAccount account, DateTime requestedDate)
         {
-            var uri = ConfigHelper.GetString(_configuration, "ElectricHalfHourlyUri", string.Empty);
+            string uri = ConfigHelper.GetString(_configuration, "ElectricHalfHourlyUri", string.Empty);
 
             if (!string.IsNullOrEmpty(uri))
             {
-                var requestUri = string.Format(uri,
+                string requestUri = string.Format(uri,
                     account.ElectricMpan,
                     account.ElectricMeterSerial,
                     requestedDate.ToString("yyyy-MM-dd"));
@@ -179,11 +179,11 @@ namespace OctopusData.Helpers
 
         public async Task<Usage?> ObtainGasHalfHourlyConsumptionAsync(OctopusAccount account, DateTime requestedDate)
         {
-            var uri = ConfigHelper.GetString(_configuration, "GasHalfHourlyUri", string.Empty);
+            string uri = ConfigHelper.GetString(_configuration, "GasHalfHourlyUri", string.Empty);
 
             if (!string.IsNullOrEmpty(uri))
             {
-                var requestUri = string.Format(uri,
+                string requestUri = string.Format(uri,
                     account.GasMprn,
                     account.GasMeterSerial,
                     requestedDate.ToString("yyyy-MM-dd"));
@@ -199,18 +199,18 @@ namespace OctopusData.Helpers
         {
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+                using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, requestUri);
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", EncodeCredentials());
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                var response = await Client.SendAsync(request);
+                HttpResponseMessage response = await Client.SendAsync(request);
 
                 // Handle redirect manually
                 if (response.StatusCode == HttpStatusCode.MovedPermanently
                     || response.StatusCode == HttpStatusCode.Redirect
                     || response.StatusCode == HttpStatusCode.TemporaryRedirect)
                 {
-                    var redirectUri = response.Headers.Location;
+                    Uri? redirectUri = response.Headers.Location;
                     if (redirectUri != null)
                     {
                         // If relative, combine with original request URI
@@ -219,7 +219,7 @@ namespace OctopusData.Helpers
                             redirectUri = new Uri(new Uri(requestUri), redirectUri);
                         }
 
-                        using var followUp = new HttpRequestMessage(HttpMethod.Get, redirectUri);
+                        using HttpRequestMessage followUp = new HttpRequestMessage(HttpMethod.Get, redirectUri);
                         followUp.Headers.Authorization = new AuthenticationHeaderValue("Basic", EncodeCredentials());
                         followUp.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -227,7 +227,7 @@ namespace OctopusData.Helpers
                     }
                 }
 
-                var responseContent = await response.Content.ReadAsStringAsync();
+                string responseContent = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -259,24 +259,24 @@ namespace OctopusData.Helpers
                     _krakenToken = await FetchKrakenToken(requestUri);
                 }
 
-                using var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+                using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, requestUri);
                 if (!string.IsNullOrEmpty(_krakenToken))
                 {
                     request.Headers.Add("Authorization", $"Bearer {_krakenToken}");
                 }
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                var content = new StringContent(body, null, "application/json");
+                StringContent content = new StringContent(body, null, "application/json");
                 request.Content = content;
 
-                var response = await Client.SendAsync(request);
+                HttpResponseMessage response = await Client.SendAsync(request);
 
                 // Handle redirect manually
                 if (response.StatusCode == HttpStatusCode.MovedPermanently
                     || response.StatusCode == HttpStatusCode.Redirect
                     || response.StatusCode == HttpStatusCode.TemporaryRedirect)
                 {
-                    var redirectUri = response.Headers.Location;
+                    Uri? redirectUri = response.Headers.Location;
                     if (redirectUri != null)
                     {
                         // If relative, combine with original request URI
@@ -285,7 +285,7 @@ namespace OctopusData.Helpers
                             redirectUri = new Uri(new Uri(requestUri), redirectUri);
                         }
 
-                        using var followUp = new HttpRequestMessage(HttpMethod.Post, redirectUri);
+                        using HttpRequestMessage followUp = new HttpRequestMessage(HttpMethod.Post, redirectUri);
                         followUp.Headers.Authorization = new AuthenticationHeaderValue("Basic", EncodeCredentials());
                         followUp.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -293,7 +293,7 @@ namespace OctopusData.Helpers
                     }
                 }
 
-                var responseContent = await response.Content.ReadAsStringAsync();
+                string responseContent = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -318,7 +318,7 @@ namespace OctopusData.Helpers
 
         private async Task<string?> FetchKrakenToken(string requestUri)
         {
-            var graphQl = ResourceHelper.GetStringResource("GraphQL.ObtainKrakenToken.json");
+            string graphQl = ResourceHelper.GetStringResource("GraphQL.ObtainKrakenToken.json");
             graphQl = graphQl.Replace("[[API-Key]]", _apiKey);
 
             KrakenResponse? response = await PostWithRedirect<KrakenResponse>(requestUri, graphQl, "ObtainKrakenToken");
@@ -330,7 +330,7 @@ namespace OctopusData.Helpers
 
         private string EncodeCredentials()
         {
-            var byteArray = Encoding.ASCII.GetBytes($"{_apiKey}:");
+            byte[] byteArray = Encoding.ASCII.GetBytes($"{_apiKey}:");
             return Convert.ToBase64String(byteArray);
         }
     }

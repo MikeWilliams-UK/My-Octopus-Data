@@ -15,7 +15,7 @@ public partial class SqLiteHelper
     {
         _logger = logger;
 
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Constants.ApplicationName);
+        string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Constants.ApplicationName);
         if (!Directory.Exists(folder))
         {
             Directory.CreateDirectory(folder);
@@ -33,13 +33,13 @@ public partial class SqLiteHelper
 
     private SQLiteConnection GetConnection()
     {
-        var conn = new SQLiteConnection($"Data Source={_dataFile};Synchronous=Full");
+        SQLiteConnection conn = new SQLiteConnection($"Data Source={_dataFile};Synchronous=Full");
         return conn.OpenAndReturn();
     }
 
     private void CreateInitialTables()
     {
-        var statements = ResourceHelper.GetStringResource("SqLite.Initial-Database.sql")
+        string[] statements = ResourceHelper.GetStringResource("SqLite.Initial-Database.sql")
             .Split(Environment.NewLine);
 
         ExecuteStatements(statements);
@@ -47,12 +47,12 @@ public partial class SqLiteHelper
 
     private void ExecuteStatements(string[] statements)
     {
-        using var connection = GetConnection();
-        foreach (var statement in statements)
+        using SQLiteConnection connection = GetConnection();
+        foreach (string statement in statements)
         {
             if (!string.IsNullOrEmpty(statement) && !statement.StartsWith('-'))
             {
-                var command = new SQLiteCommand(statement, connection);
+                SQLiteCommand command = new SQLiteCommand(statement, connection);
                 command.ExecuteNonQuery();
             }
         }
@@ -60,22 +60,22 @@ public partial class SqLiteHelper
 
     private bool ColumnExists(string tableName, string columnName)
     {
-        var result = false;
+        bool result = false;
 
-        using var connection = GetConnection();
-        var stringBuilder = new StringBuilder();
+        using SQLiteConnection connection = GetConnection();
+        StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.AppendLine("SELECT sql");
         stringBuilder.AppendLine("FROM sqlite_master");
         stringBuilder.AppendLine($"WHERE type='table' AND name='{tableName}'");
 
-        var command = new SQLiteCommand(stringBuilder.ToString(), connection);
-        var reader = command.ExecuteReader();
+        SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
+        SQLiteDataReader? reader = command.ExecuteReader();
         if (reader.HasRows)
         {
             while (reader.Read())
             {
-                var sql = FieldAsString(reader["sql"]);
+                string sql = FieldAsString(reader["sql"]);
                 result = sql.Contains(columnName);
             }
         }
@@ -85,18 +85,18 @@ public partial class SqLiteHelper
 
     private bool ObjectExists(string objectType, string objectName)
     {
-        var result = false;
+        bool result = false;
 
-        using (var connection = GetConnection())
+        using (SQLiteConnection connection = GetConnection())
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("SELECT name");
             stringBuilder.AppendLine("FROM sqlite_master");
             stringBuilder.AppendLine($"WHERE type='{objectType}' AND name='{objectName}'");
 
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
-            var reader = command.ExecuteReader();
+            SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            SQLiteDataReader? reader = command.ExecuteReader();
             if (reader.HasRows)
             {
                 while (reader.Read())
@@ -116,13 +116,13 @@ public partial class SqLiteHelper
 
     private int FieldAsInt(object field)
     {
-        var temp = $"{field}";
+        string temp = $"{field}";
         return string.IsNullOrEmpty(temp) ? 0 : int.Parse(temp);
     }
 
     private DateTime FieldAsTime(object field)
     {
-        var temp = $"{field}";
+        string temp = $"{field}";
         if (string.IsNullOrEmpty(temp))
         {
             return DateTime.MaxValue;
@@ -133,7 +133,7 @@ public partial class SqLiteHelper
 
     private double FieldAsDouble(object field)
     {
-        var temp = $"{field}";
+        string temp = $"{field}";
         if (string.IsNullOrEmpty(temp))
         {
             return 0;
@@ -144,9 +144,9 @@ public partial class SqLiteHelper
 
     public List<MySummary> GetSummaryInformation()
     {
-        var result = new List<MySummary>();
+        List<MySummary> result = new List<MySummary>();
 
-        using (var connection = GetConnection())
+        using (SQLiteConnection connection = GetConnection())
         {
             GetHalfHourlyConsumptionMetric(connection, StringHelper.ProperCase(Constants.Electric));
             GetHalfHourlyConsumptionMetric(connection, StringHelper.ProperCase(Constants.Gas));
@@ -163,9 +163,9 @@ public partial class SqLiteHelper
 
         void ExtractMetric(SQLiteDataReader reader, string metric, string fuelType)
         {
-            var from = FieldAsString(reader["Min"]);
-            var to = FieldAsString(reader["Max"]);
-            var count = FieldAsInt(reader["count"]);
+            string from = FieldAsString(reader["Min"]);
+            string to = FieldAsString(reader["Max"]);
+            int count = FieldAsInt(reader["count"]);
 
             if (from.Length > 16)
             {
@@ -179,7 +179,7 @@ public partial class SqLiteHelper
 
             if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
             {
-                var info = new MySummary
+                MySummary info = new MySummary
                 {
                     FuelType = StringHelper.ProperCase(fuelType),
                     Metric = metric,
@@ -194,13 +194,13 @@ public partial class SqLiteHelper
 
         void GetHalfHourlyConsumptionMetric(SQLiteConnection connection, string fuelType)
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("SELECT MAX(StartTime) AS Max, MIN(StartTime) AS Min, Count(1) AS Count");
             stringBuilder.AppendLine($"FROM HalfHourlyConsumption{fuelType}");
 
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
-            var reader = command.ExecuteReader();
+            SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            SQLiteDataReader? reader = command.ExecuteReader();
             if (reader.HasRows)
             {
                 while (reader.Read())
@@ -212,13 +212,13 @@ public partial class SqLiteHelper
 
         void GetHalfHourlyCostsMetric(SQLiteConnection connection, string fuelType)
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("SELECT MAX(StartTime) AS Max, MIN(StartTime) AS Min, Count(1) AS Count");
             stringBuilder.AppendLine($"FROM HalfHourlyCosts{fuelType}");
 
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
-            var reader = command.ExecuteReader();
+            SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            SQLiteDataReader? reader = command.ExecuteReader();
             if (reader.HasRows)
             {
                 while (reader.Read())
@@ -228,16 +228,15 @@ public partial class SqLiteHelper
             }
         }
 
-
         void GetChargeEventsMetric(SQLiteConnection connection, string fuelType)
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine("SELECT MAX(StartTime) AS Max, MIN(StartTime) AS Min, Count(1) AS Count");
             stringBuilder.AppendLine("FROM ChargeEvents");
 
-            var command = new SQLiteCommand(stringBuilder.ToString(), connection);
-            var reader = command.ExecuteReader();
+            SQLiteCommand command = new SQLiteCommand(stringBuilder.ToString(), connection);
+            SQLiteDataReader? reader = command.ExecuteReader();
             if (reader.HasRows)
             {
                 while (reader.Read())

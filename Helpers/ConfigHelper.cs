@@ -6,13 +6,13 @@ public static class ConfigHelper
 {
     public static string GetString(IConfigurationRoot? config, string key, string defaultValue)
     {
-        var result = defaultValue;
+        string result = defaultValue;
 
         if (config != null)
         {
             try
             {
-                var value = config[key];
+                string? value = config[key];
                 if (!string.IsNullOrEmpty(value))
                 {
                     return value;
@@ -30,13 +30,13 @@ public static class ConfigHelper
 
     public static bool GetBoolean(IConfigurationRoot? config, string key, bool defaultValue)
     {
-        var result = defaultValue;
+        bool result = defaultValue;
 
         if (config != null)
         {
             try
             {
-                var value = config[key];
+                string? value = config[key];
                 if (bool.TryParse(value, out result))
                 {
                     return result;
