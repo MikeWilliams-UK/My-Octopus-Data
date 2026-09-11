@@ -334,9 +334,10 @@ namespace OctopusData.Forms
                 // ToDo: Change second condition to allow for fetching all time
                 while (currentDay > _supplyDateGas && currentDay > _lastDateGasCosts)
                 {
+                    List<OctopusHalfHourlyCost> costsGas = [];
+
                     SetStatusText($"Fetching Gas Costs for {currentDay:yyyy-MM-dd}");
 
-                    List<OctopusHalfHourlyCost> costsGas = [];
                     var jsonGas = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, currentDay);
                     if (jsonGas != null)
                     {
@@ -396,90 +397,96 @@ namespace OctopusData.Forms
                 // ToDo: Change second condition to allow for fetching all time
                 while (currentDay > _supplyDateElectric && currentDay > _lastDateElectricCosts)
                 {
+                    List<OctopusHalfHourlyCost> costsElectric = [];
+
                     SetStatusText($"Fetching Electricity Costs for {currentDay:yyyy-MM-dd}");
 
-                    if (currentDay < new DateTime(2026, 08, 01, 0,0,0, DateTimeKind.Utc))
+                    if (currentDay < new DateTime(2026, 08, 03, 0, 0, 0, DateTimeKind.Utc))
                     {
-                        Debugger.Break();
-
-                        var json = await _httpHelper.ObtainElectricHalfHourlyCostsAsync(_account, currentDay);
+                        // Fetching of electricity costs only works from 03/08/2026 onwards
+                        break;
                     }
-
-                    List<OctopusHalfHourlyCost> costsElectric = [];
-                    var jsonElectric = await _httpHelper.ObtainElectricUsageCostsAsync(_account, currentDay);
-                    if (jsonElectric != null)
+                    else
                     {
-                        foreach (var edge in jsonElectric.Data.Account.Properties[0].Measurements.Edges)
+                        var jsonElectric = await _httpHelper.ObtainElectricUsageCostsAsync(_account, currentDay);
+                        if (jsonElectric != null)
                         {
-                            var costs = new OctopusHalfHourlyCost
+                            foreach (var edge in jsonElectric.Data.Account.Properties[0].Measurements.Edges)
                             {
-                                Interval = new OctopusInterval
+                                var costs = new OctopusHalfHourlyCost
                                 {
-                                    Start = edge.Node.StartAt,
-                                    End = edge.Node.EndAt
-                                },
-                                Consumption = double.Parse(edge.Node.Value)
-                            };
+                                    Interval = new OctopusInterval
+                                    {
+                                        Start = edge.Node.StartAt,
+                                        End = edge.Node.EndAt
+                                    },
+                                    Consumption = double.Parse(edge.Node.Value)
+                                };
 
-                            foreach (var statistic in edge.Node.MetaData.Statistics)
-                            {
-                                if (statistic.Type.Equals("STANDING_CHARGE_COST"))
+                                foreach (var statistic in edge.Node.MetaData.Statistics)
                                 {
-                                    var cd = new OctopusCostData
+                                    if (statistic.Type.Equals("STANDING_CHARGE_COST"))
                                     {
-                                        CostType = "Standing Charge",
-                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
-                                    };
+                                        var cd = new OctopusCostData
+                                        {
+                                            CostType = "Standing Charge",
+                                            CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                            CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                        };
 
-                                    costs.Costs.Add(cd);
-                                }
-                                else
-                                {
-                                    var cd = new OctopusCostData
-                                    {
-                                        RateExcludingVat = double.Parse(statistic.CostExclTax.PricePerUnit.Amount),
-                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                        RateIncludingVat = double.Parse(statistic.CostInclTax.PricePerUnit.Amount),
-                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
-                                    };
-
-                                    if (!string.IsNullOrEmpty(statistic.Value))
-                                    {
-                                        cd.Consumption = double.Parse(statistic.Value);
+                                        costs.Costs.Add(cd);
                                     }
-
-                                    switch (statistic.Label)
+                                    else
                                     {
-                                        case "CONSUMPTION_CHARGE_ECO7_DAY_B":
-                                            cd.CostType = "E7 Day";
-                                            break;
+                                        var cd = new OctopusCostData
+                                        {
+                                            RateExcludingVat = double.Parse(statistic.CostExclTax.PricePerUnit.Amount),
+                                            CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                            RateIncludingVat = double.Parse(statistic.CostInclTax.PricePerUnit.Amount),
+                                            CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                        };
 
-                                        case "CONSUMPTION_CHARGE_ECO7_NIGHT_B":
-                                            cd.CostType = "E7 Night";
-                                            break;
+                                        if (!string.IsNullOrEmpty(statistic.Value))
+                                        {
+                                            cd.Consumption = double.Parse(statistic.Value);
+                                        }
 
-                                        case "CONSUMPTION_CHARGE_EV_DEVICE_OFF_PEAK_B":
-                                            cd.CostType = "EV Off Peak";
-                                            break;
+                                        switch (statistic.Label)
+                                        {
+                                            case "CONSUMPTION_CHARGE_ECO7_DAY_B":
+                                                cd.CostType = "E7 Day";
+                                                break;
 
-                                        case "CONSUMPTION_CHARGE_EV_DEVICE_PEAK_B":
-                                            cd.CostType = "EV Peak";
-                                            break;
+                                            case "CONSUMPTION_CHARGE_ECO7_NIGHT_B":
+                                                cd.CostType = "E7 Night";
+                                                break;
 
-                                        default:
-                                            cd.CostType = statistic.Label;
-                                            break;
+                                            case "CONSUMPTION_CHARGE_EV_DEVICE_OFF_PEAK_B":
+                                                cd.CostType = "EV Off Peak";
+                                                break;
+
+                                            case "CONSUMPTION_CHARGE_EV_DEVICE_PEAK_B":
+                                                cd.CostType = "EV Peak";
+                                                break;
+
+                                            default:
+                                                cd.CostType = statistic.Label;
+                                                break;
+                                        }
+
+                                        costs.Costs.Add(cd);
                                     }
-
-                                    costs.Costs.Add(cd);
                                 }
+
+                                costsElectric.Add(costs);
                             }
 
-                            costsElectric.Add(costs);
+                            sqLiteHelper.UpsertHalfHourlyCosts("Electric", costsElectric);
                         }
-
-                        sqLiteHelper.UpsertHalfHourlyCosts("Electric", costsElectric);
+                        else
+                        {
+                            Debugger.Break();
+                        }
                     }
 
                     // Go back in time one day

@@ -43,7 +43,7 @@ SELECT StartTime,
 FROM ChargeEvents
 WHERE EnergyAdded > 0
   AND StartTime > '2026-05-26'
-ORDER BY StartTime
+ORDER BY StartTime DESC
 
 -- Charge Events
 SELECT MIN(StartTime) [First Event],
@@ -52,26 +52,26 @@ SELECT MIN(StartTime) [First Event],
        SUM(EnergyAdded) [kWh Added]
 FROM ChargeEvents
 WHERE EnergyAdded > 0
-  AND StartTime > '2026-07-01'
+AND StartTime BETWEEN '2026-08-03' AND '2026-09-30'
 GROUP BY SUBSTR(StartTime, 1, 11)
-ORDER BY StartTime
+ORDER BY StartTime DESC
 
--- Charge Costs
+-- EV Charge Costs
 Select *
-FROM HalfHourlyCostsElectric 
+FROM HalfHourlyCostsElectric
 Where 1=1
 AND Consumption > 0
 AND SUBSTR(CostType, 1, 2) = 'EV'
---AND StartTime > '2026-08-16 11' AND StartTime < '2026-08-16 13'
-ORDER BY StartTime
+AND StartTime BETWEEN '2026-08-16 10' AND '2026-08-16 16'
+ORDER BY StartTime DESC
 
--- Find out how much electricity should be free
+-- All Electric Costs for a free hour
 Select *
-FROM HalfHourlyCostsElectric 
+FROM HalfHourlyCostsElectric
 Where 1=1
 AND Consumption > 0
-AND StartTime > '2026-08-16 11' AND StartTime < '2026-08-16 13'
-ORDER BY StartTime
+AND StartTime > '2026-09-06 13' AND StartTime < '2026-09-06 15'
+ORDER BY StartTime, CostType
 
 -- All Gas Charges
 Select *
@@ -79,4 +79,4 @@ FROM HalfHourlyCostsGas
 Where 1=1
 AND Consumption > 0
 AND StartTime > '2026-09-01'
-ORDER BY StartTime
+ORDER BY StartTime DESC
