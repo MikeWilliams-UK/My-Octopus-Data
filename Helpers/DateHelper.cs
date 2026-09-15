@@ -60,6 +60,13 @@ public static class DateHelper
         return $"{day:yyyy-MM-ddTHH:mm:ss.fffZ}";
     }
 
+    public static string EndOfTomorrow(DateTime date)
+    {
+        DateTime day = new DateTime(date.Year, date.Month, date.Day, 23, 59, 59, DateTimeKind.Utc);
+        day = day.AddDays(1);
+        return $"{day:yyyy-MM-ddTHH:mm:ss.fffZ}";
+    }
+
     public static string FirstDayOfThisMonth(DateTime date)
     {
         DateTime day = new DateTime(date.Year, date.Month, 1, 0, 0, 0, DateTimeKind.Utc);

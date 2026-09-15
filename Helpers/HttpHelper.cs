@@ -69,8 +69,8 @@ namespace OctopusData.Helpers
 
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
-                .Replace("[[StartOfThisPeriod]]", DateHelper.StartOfToday(requestedDate))
-                .Replace("[[StartOfNextPeriod]]", DateHelper.StartOfTomorrow(requestedDate))
+                .Replace("[[StartOfPeriod]]", DateHelper.StartOfToday(requestedDate))
+                .Replace("[[EndOfPeriod]]", DateHelper.EndOfTomorrow(requestedDate))
                 .Replace("[[Gas-Supply-Point]]", account.GasMprn)
                 .Replace("[[query]]", query);
 
@@ -88,8 +88,8 @@ namespace OctopusData.Helpers
 
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
-                .Replace("[[StartOfThisPeriod]]", DateHelper.StartOfToday(requestedDate))
-                .Replace("[[StartOfNextPeriod]]", DateHelper.StartOfTomorrow(requestedDate))
+                .Replace("[[StartOfPeriod]]", DateHelper.StartOfToday(requestedDate))
+                .Replace("[[EndOfPeriod]]", DateHelper.EndOfTomorrow(requestedDate))
                 .Replace("[[Electric-Supply-Point]]", account.ElectricMpan)
                 .Replace("[[query]]", query);
 
@@ -107,8 +107,8 @@ namespace OctopusData.Helpers
 
             graphQl = graphQl
                 .Replace("[[Account-Number]]", account.Id)
-                .Replace("[[StartOfThisPeriod]]", DateHelper.StartOfToday(requestedDate))
-                .Replace("[[StartOfNextPeriod]]", DateHelper.StartOfTomorrow(requestedDate))
+                .Replace("[[StartOfPeriod]]", DateHelper.StartOfToday(requestedDate))
+                .Replace("[[EndOfPeriod]]", DateHelper.EndOfTomorrow(requestedDate))
                 .Replace("[[Electric-Supply-Point]]", account.ElectricMpan)
                 .Replace("[[query]]", query);
 

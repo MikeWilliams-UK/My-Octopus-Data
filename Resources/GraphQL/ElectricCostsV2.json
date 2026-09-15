@@ -3,8 +3,8 @@
   "variables": {
     "accountNumber": "[[Account-Number]]",
     "first": 100,
-    "startAt": "[[StartOfThisPeriod]]",
-    "endAt": "[[StartOfNextPeriod]]",
+    "startAt": "[[StartOfPeriod]]",
+    "endAt": "[[EndOfPeriod]]",
     "timezone": "Europe/London",
     "utilityFilters": [
       {

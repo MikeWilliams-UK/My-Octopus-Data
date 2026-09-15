@@ -228,7 +228,7 @@ namespace OctopusData.Forms
                 DateTime currentDay = DateTime.UtcNow.Date;
 
                 // ToDo: Change second condition to allow for fetching all time
-                while (currentDay > _supplyDateElectric && currentDay > _lastDateElectricConsumption)
+                while (currentDay > _supplyDateElectric && currentDay > _lastDateElectricConsumption.AddDays(-1))
                 {
                     SetStatusText($"Fetching Electric Consumption for {currentDay:yyyy-MM-dd}");
 
@@ -273,7 +273,7 @@ namespace OctopusData.Forms
                 SetStatusText("Fetching Gas Consumption ...");
 
                 // ToDo: Change second condition to allow for fetching all time
-                while (currentDay > _supplyDateGas && currentDay > _lastDateGasConsumption)
+                while (currentDay > _supplyDateGas && currentDay > _lastDateGasConsumption.AddDays(-1))
                 {
                     SetStatusText($"Fetching Gas Consumption for {currentDay:yyyy-MM-dd}");
 
@@ -339,7 +339,7 @@ namespace OctopusData.Forms
                 SetStatusText("Fetching Gas Costs ...");
 
                 // ToDo: Change second condition to allow for fetching all time
-                while (currentDay > _supplyDateGas && currentDay > _lastDateGasCosts)
+                while (currentDay > _supplyDateGas && currentDay > _lastDateGasCosts.AddDays(-1))
                 {
                     List<OctopusHalfHourlyCost> costsGas = [];
 
@@ -405,7 +405,7 @@ namespace OctopusData.Forms
                 SetStatusText("Fetching Electricity Costs ...");
 
                 // ToDo: Change second condition to allow for fetching all time
-                while (currentDay > _supplyDateElectric && currentDay > _lastDateElectricCosts)
+                while (currentDay > _supplyDateElectric && currentDay > _lastDateElectricCosts.AddDays(-1))
                 {
                     List<OctopusHalfHourlyCost> costsElectric = [];
 
