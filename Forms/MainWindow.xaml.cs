@@ -474,6 +474,22 @@ namespace OctopusData.Forms
                                             cd.CostType = "EV Peak";
                                             break;
 
+                                        case "Home Standard Rate":
+                                            cd.CostType = "Standard Rate";
+                                            break;
+
+                                        case "Home Low Rate":
+                                            cd.CostType = "Low Rate";
+                                            break;
+
+                                        case "EV Standard Rate":
+                                            cd.CostType = "EV Standard Rate";
+                                            break;
+
+                                        case "EV Low Rate":
+                                            cd.CostType = "EV Low Rate";
+                                            break;
+
                                         default:
                                             cd.CostType = statistic.Label;
                                             Debugger.Break();
