@@ -80,3 +80,15 @@ Where 1=1
 AND Consumption > 0
 AND StartTime > '2026-09-01'
 ORDER BY StartTime DESC
+
+Hi all,
+
+If you use our API or develop a service that uses our API there’s a CHANGE that’s going to BREAK all use and integration in a few months time.
+The change is that the API is now accessed via:
+api.oegb-kraken.energy instead of api.octopus.energy
+
+This change is live now and we’ll be running both in parallel for a few months.
+
+Whilst I’m here we’re also working on third party apps being able to authenticate using OAuth so if you’ve got an interest in that, or know any app/service that wants to, bring them here and we’ll help get them set up.
+
+Phil

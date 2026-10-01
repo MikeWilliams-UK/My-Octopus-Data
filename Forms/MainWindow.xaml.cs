@@ -52,6 +52,8 @@ namespace OctopusData.Forms
         private DateTime _lastDateElectricCosts = DateTime.MinValue;
         private DateTime _lastDateGasCosts = DateTime.MinValue;
 
+        private DateTime _lastChargeHistory = DateTime.MinValue;
+
         private DispatcherTimer? _timer;
 
         public MainWindow()
@@ -546,7 +548,7 @@ namespace OctopusData.Forms
                 DateTime day = new DateTime(today.Year, today.Month, 01, 0, 0, 0, DateTimeKind.Local);
 
                 // ToDo: Add second condition to allow for fetching all time
-                while (day > _account.MovedIn)
+                while (day > _account.MovedIn && day > _lastChargeHistory.AddDays(-1))
                 {
                     SetStatusText($"Fetching Charge History for {day:yyyy-MM}");
 
@@ -727,6 +729,15 @@ namespace OctopusData.Forms
             if (gasCosts != null)
             {
                 _lastDateGasCosts = DateTime.ParseExact(gasCosts.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+            }
+
+            MySummary? chargeEvents = summary.FirstOrDefault(s => s is { FuelType: Constants.Electric, Metric: "Charge Events" });
+            if (chargeEvents != null)
+            {
+                _lastChargeHistory = DateTime.ParseExact(chargeEvents.To, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+                _lastChargeHistory = new DateTime(_lastChargeHistory.Year, _lastChargeHistory.Month, 1,
+                    0, 0, 0,
+                    DateTimeKind.Utc);
             }
 
             AccountStatistics.ItemsSource = summary;
