@@ -43,16 +43,16 @@ namespace OctopusData.Forms
 
         private readonly OctopusAccount _account = new();
 
-        private DateTime _supplyDateElectric = DateTime.MaxValue;
-        private DateTime _supplyDateGas = DateTime.MaxValue;
+        private DateTime _supplyDateElectric = DateTime.MaxValue.AddDays(-1);
+        private DateTime _supplyDateGas = DateTime.MaxValue.AddDays(-1);
 
-        private DateTime _lastDateElectricConsumption = DateTime.MinValue;
-        private DateTime _lastDateGasConsumption = DateTime.MinValue;
+        private DateTime _lastDateElectricConsumption = DateTime.MinValue.AddDays(1);
+        private DateTime _lastDateGasConsumption = DateTime.MinValue.AddDays(1);
 
-        private DateTime _lastDateElectricCosts = DateTime.MinValue;
-        private DateTime _lastDateGasCosts = DateTime.MinValue;
+        private DateTime _lastDateElectricCosts = DateTime.MinValue.AddDays(1);
+        private DateTime _lastDateGasCosts = DateTime.MinValue.AddDays(1);
 
-        private DateTime _lastChargeHistory = DateTime.MinValue;
+        private DateTime _lastChargeHistory = DateTime.MinValue.AddDays(1);
 
         private DispatcherTimer? _timer;
 
@@ -338,72 +338,6 @@ namespace OctopusData.Forms
 
                 DateTime currentDay = DateTime.UtcNow.Date;
 
-                SetStatusText("Fetching Gas Costs ...");
-
-                // ToDo: Change second condition to allow for fetching all time
-                while (currentDay > _supplyDateGas && currentDay > _lastDateGasCosts.AddDays(-1))
-                {
-                    List<OctopusHalfHourlyCost> costsGas = [];
-
-                    SetStatusText($"Fetching Gas Costs for {currentDay:yyyy-MM-dd}");
-
-                    GasCosts? gasCosts = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, currentDay);
-                    if (gasCosts != null)
-                    {
-                        foreach (Models.GasCost.Edge edge in gasCosts.Data.Account.Properties[0].Measurements.Edges)
-                        {
-                            OctopusHalfHourlyCost costs = new OctopusHalfHourlyCost
-                            {
-                                Interval = new OctopusInterval
-                                {
-                                    Start = edge.Node.StartAt,
-                                    End = edge.Node.EndAt
-                                },
-                                Consumption = double.Parse(edge.Node.Value)
-                            };
-
-                            foreach (Statistic statistic in edge.Node.MetaData.Statistics)
-                            {
-                                if (statistic.Type.Equals("STANDING_CHARGE_COST"))
-                                {
-                                    OctopusCostData cd = new OctopusCostData
-                                    {
-                                        CostType = "Standing Charge",
-                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
-                                    };
-
-                                    costs.Costs.Add(cd);
-                                }
-                                else
-                                {
-                                    OctopusCostData cd = new OctopusCostData
-                                    {
-                                        CostType = "Gas",
-                                        Consumption = double.Parse(edge.Node.Value),
-                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
-                                    };
-
-                                    costs.Costs.Add(cd);
-                                }
-                            }
-
-                            costsGas.Add(costs);
-                        }
-
-                        if (costsGas.Count > 0)
-                        {
-                            sqLiteHelper.UpsertHalfHourlyCosts("Gas", costsGas);
-                        }
-                    }
-
-                    // Go back in time one day
-                    currentDay = currentDay.AddDays(-1);
-                }
-
-                currentDay = DateTime.UtcNow.Date;
-
                 SetStatusText("Fetching Electricity Costs ...");
 
                 // ToDo: Change second condition to allow for fetching all time
@@ -436,6 +370,19 @@ namespace OctopusData.Forms
                                     OctopusCostData cd = new OctopusCostData
                                     {
                                         CostType = "Standing Charge",
+                                        RateExcludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount),
+                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        RateIncludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                    };
+
+                                    costs.Costs.Add(cd);
+                                }
+                                else if (statistic.Type.Equals("CONSUMPTION_COST"))
+                                {
+                                    OctopusCostData cd = new OctopusCostData
+                                    {
+                                        CostType = "Consumption Cost",
                                         RateExcludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount),
                                         CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
                                         RateIncludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
@@ -516,6 +463,73 @@ namespace OctopusData.Forms
 
                     currentDay = currentDay.AddDays(-1);
                 }
+
+                currentDay = DateTime.UtcNow.Date;
+
+                SetStatusText("Fetching Gas Costs ...");
+
+                // ToDo: Change second condition to allow for fetching all time
+                while (currentDay > _supplyDateGas && currentDay > _lastDateGasCosts.AddDays(-1))
+                {
+                    List<OctopusHalfHourlyCost> costsGas = [];
+
+                    SetStatusText($"Fetching Gas Costs for {currentDay:yyyy-MM-dd}");
+
+                    GasCosts? gasCosts = await _httpHelper.ObtainGasHalfHourlyCostsAsync(_account, currentDay);
+                    if (gasCosts != null)
+                    {
+                        foreach (Models.GasCost.Edge edge in gasCosts.Data.Account.Properties[0].Measurements.Edges)
+                        {
+                            OctopusHalfHourlyCost costs = new OctopusHalfHourlyCost
+                            {
+                                Interval = new OctopusInterval
+                                {
+                                    Start = edge.Node.StartAt,
+                                    End = edge.Node.EndAt
+                                },
+                                Consumption = double.Parse(edge.Node.Value)
+                            };
+
+                            foreach (Statistic statistic in edge.Node.MetaData.Statistics)
+                            {
+                                if (statistic.Type.Equals("STANDING_CHARGE_COST"))
+                                {
+                                    OctopusCostData cd = new OctopusCostData
+                                    {
+                                        CostType = "Standing Charge",
+                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                    };
+
+                                    costs.Costs.Add(cd);
+                                }
+                                else
+                                {
+                                    OctopusCostData cd = new OctopusCostData
+                                    {
+                                        CostType = "Gas",
+                                        Consumption = double.Parse(edge.Node.Value),
+                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                    };
+
+                                    costs.Costs.Add(cd);
+                                }
+                            }
+
+                            costsGas.Add(costs);
+                        }
+
+                        if (costsGas.Count > 0)
+                        {
+                            sqLiteHelper.UpsertHalfHourlyCosts("Gas", costsGas);
+                        }
+                    }
+
+                    // Go back in time one day
+                    currentDay = currentDay.AddDays(-1);
+                }
+
             }
             catch (Exception exception)
             {
@@ -742,23 +756,21 @@ namespace OctopusData.Forms
 
         public void SetStatusText(string message, bool log = false)
         {
-            if (log)
-            {
-                _logger?.WriteLine(message);
-            }
+            _logger?.WriteLine(message);
             Status.Text = message;
             DoWpfEvents();
         }
 
-        private static void DoWpfEvents()
+        private async void DoWpfEvents()
         {
             try
             {
-                Application.Current.Dispatcher.Invoke(DispatcherPriority.Background, new ThreadStart(delegate { }));
+                await Dispatcher.Yield(DispatcherPriority.Background);
             }
             catch
             {
                 // Nothing we can do here
+                Debugger.Break();
             }
         }
 
