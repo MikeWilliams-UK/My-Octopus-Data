@@ -414,6 +414,7 @@ namespace OctopusData.Forms
                     SetStatusText($"Fetching Electricity Costs for {currentDay:yyyy-MM-dd}");
 
                     ElectricCosts? electricCosts = await _httpHelper.ObtainElectricUsageCostsAsync(_account, currentDay);
+
                     if (electricCosts != null)
                     {
                         foreach (Models.ElectricCost.Edge edge in electricCosts.Data.Account.Properties[0].Measurements.Edges)
@@ -507,16 +508,12 @@ namespace OctopusData.Forms
 
                         if (costsElectric.Count > 0)
                         {
-                            int upserted = sqLiteHelper.UpsertHalfHourlyCosts("Electric", costsElectric);
-                            if (upserted == 0)
-                            {
-                                // We have exhausted all "new" costs (i.e. date is before 03/08/2026)
-                                break;
-                            }
+                            sqLiteHelper.UpsertHalfHourlyCosts("Electric", costsElectric);
                         }
                     }
 
                     // Go back in time one day
+
                     currentDay = currentDay.AddDays(-1);
                 }
             }
