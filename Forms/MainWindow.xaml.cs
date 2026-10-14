@@ -341,7 +341,7 @@ namespace OctopusData.Forms
                 SetStatusText("Fetching Electricity Costs ...");
 
                 // ToDo: Change second condition to allow for fetching all time
-                while (currentDay > _supplyDateElectric && currentDay > _lastDateElectricCosts.AddDays(-1))
+                while (currentDay > _supplyDateElectric)// && currentDay > _lastDateElectricCosts.AddDays(-1))
                 {
                     List<OctopusHalfHourlyCost> costsElectric = [];
 
@@ -378,19 +378,6 @@ namespace OctopusData.Forms
 
                                     costs.Costs.Add(cd);
                                 }
-                                else if (statistic.Type.Equals("CONSUMPTION_COST"))
-                                {
-                                    OctopusCostData cd = new OctopusCostData
-                                    {
-                                        CostType = "Consumption Cost",
-                                        RateExcludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount),
-                                        CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                        RateIncludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
-                                    };
-
-                                    costs.Costs.Add(cd);
-                                }
                                 else
                                 {
                                     OctopusCostData cd = new OctopusCostData
@@ -398,13 +385,8 @@ namespace OctopusData.Forms
                                         RateExcludingVat = double.Parse(statistic.CostExclTax.PricePerUnit.Amount),
                                         CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
                                         RateIncludingVat = double.Parse(statistic.CostInclTax.PricePerUnit.Amount),
-                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
+                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount),
                                     };
-
-                                    if (!string.IsNullOrEmpty(statistic.Value))
-                                    {
-                                        cd.Consumption = double.Parse(statistic.Value);
-                                    }
 
                                     switch (statistic.Label)
                                     {
@@ -446,6 +428,15 @@ namespace OctopusData.Forms
                                             break;
                                     }
 
+                                    if (!string.IsNullOrEmpty(statistic.Value))
+                                    {
+                                        cd.Consumption = double.Parse(statistic.Value);
+                                    }
+
+                                    if (cd.Consumption > 0)
+                                    {
+                                        //Debugger.Break();
+                                    }
                                     costs.Costs.Add(cd);
                                 }
                             }
@@ -529,7 +520,6 @@ namespace OctopusData.Forms
                     // Go back in time one day
                     currentDay = currentDay.AddDays(-1);
                 }
-
             }
             catch (Exception exception)
             {
