@@ -338,10 +338,19 @@ namespace OctopusData.Forms
 
                 DateTime currentDay = DateTime.UtcNow.Date;
 
+                // Debugging ...
+                //int day = 0;
+                //List<DateTime> days = [];
+                //days.Add(new DateTime(2026, 09, 27));
+                //days.Add(new DateTime(2025, 11, 28));
+                //days.Add(new DateTime(2025, 11, 27));
+
+                //currentDay = days[0];
+
                 SetStatusText("Fetching Electricity Costs ...");
 
                 // ToDo: Change second condition to allow for fetching all time
-                while (currentDay > _supplyDateElectric)// && currentDay > _lastDateElectricCosts.AddDays(-1))
+                while (currentDay > _supplyDateElectric && currentDay > _lastDateElectricCosts.AddDays(-1))
                 {
                     List<OctopusHalfHourlyCost> costsElectric = [];
 
@@ -370,62 +379,72 @@ namespace OctopusData.Forms
                                     OctopusCostData cd = new OctopusCostData
                                     {
                                         CostType = "Standing Charge",
-                                        RateExcludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount),
+                                        RateExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
                                         CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                        RateIncludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
+                                        RateIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount),
                                         CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
                                     };
 
                                     costs.Costs.Add(cd);
                                 }
-                                else
+
+                                if (statistic.Type.Equals("CONSUMPTION_COST"))
                                 {
                                     OctopusCostData cd = new OctopusCostData
                                     {
-                                        RateExcludingVat = double.Parse(statistic.CostExclTax.PricePerUnit.Amount),
                                         CostExcludingVat = double.Parse(statistic.CostExclTax.EstimatedAmount),
-                                        RateIncludingVat = double.Parse(statistic.CostInclTax.PricePerUnit.Amount),
-                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount),
+                                        CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
                                     };
+
+                                    if (statistic.CostExclTax.PricePerUnit != null)
+                                    {
+                                        cd.RateExcludingVat = double.Parse(statistic.CostExclTax.PricePerUnit.Amount);
+                                    }
+                                    if (statistic.CostInclTax.PricePerUnit != null)
+                                    {
+                                        cd.RateIncludingVat = double.Parse(statistic.CostInclTax.PricePerUnit.Amount);
+                                    }
 
                                     switch (statistic.Label)
                                     {
+                                        case "CONSUMPTION":
+                                            cd.CostType = "Consumption";
+                                            break;
+
                                         case "CONSUMPTION_CHARGE_ECO7_DAY_B":
-                                            cd.CostType = "Day";
+                                        case "Home Standard Rate":
+                                            cd.CostType = "Home Day Rate";
+                                            cd.Consumption = double.Parse(edge.Node.Value);
                                             break;
 
                                         case "CONSUMPTION_CHARGE_ECO7_NIGHT_B":
-                                            cd.CostType = "Night";
+                                        case "Home Low Rate":
+                                            cd.CostType = "Home Night Rate";
+                                            cd.Consumption = double.Parse(edge.Node.Value);
                                             break;
 
                                         case "CONSUMPTION_CHARGE_EV_DEVICE_OFF_PEAK_B":
-                                            cd.CostType = "EV Off Peak";
+                                        case "EV Low Rate":
+                                            cd.CostType = "EV Low Rate";
+                                            cd.Consumption = double.Parse(edge.Node.Value);
                                             break;
 
                                         case "CONSUMPTION_CHARGE_EV_DEVICE_PEAK_B":
-                                            cd.CostType = "EV Peak";
-                                            break;
-
-                                        case "Home Standard Rate":
-                                            cd.CostType = "Standard Rate";
-                                            break;
-
-                                        case "Home Low Rate":
-                                            cd.CostType = "Low Rate";
-                                            break;
-
                                         case "EV Standard Rate":
-                                            cd.CostType = "EV Standard Rate";
-                                            break;
-
-                                        case "EV Low Rate":
-                                            cd.CostType = "EV Low Rate";
+                                            cd.CostType = "EV High Rate";
+                                            cd.Consumption = double.Parse(edge.Node.Value);
                                             break;
 
                                         default:
                                             cd.CostType = statistic.Label;
+                                            cd.Consumption = double.Parse(edge.Node.Value);
                                             Debugger.Break();
                                             break;
+                                    }
+
+                                    if (currentDay.Year == 2025)
+                                    {
+                                        //Debugger.Break();
                                     }
 
                                     if (!string.IsNullOrEmpty(statistic.Value))
@@ -433,11 +452,23 @@ namespace OctopusData.Forms
                                         cd.Consumption = double.Parse(statistic.Value);
                                     }
 
-                                    if (cd.Consumption > 0)
+                                    switch (statistic.Type)
                                     {
-                                        //Debugger.Break();
+                                        case "CONSUMPTION":
+                                            //
+                                            break;
+                                        case "CONSUMPTION_COST":
+                                            if (edge.Node.MetaData.Statistics.Count == 2)
+                                            {
+                                                cd.Consumption = double.Parse(edge.Node.Value);
+                                            }
+                                            break;
                                     }
-                                    costs.Costs.Add(cd);
+
+                                    if (cd.Consumption > 0 || cd.CostType == "Standing Charge")
+                                    {
+                                        costs.Costs.Add(cd);
+                                    }
                                 }
                             }
 
@@ -447,12 +478,19 @@ namespace OctopusData.Forms
                         if (costsElectric.Count > 0)
                         {
                             sqLiteHelper.UpsertHalfHourlyCosts("Electric", costsElectric);
+                            //Debugger.Break();
                         }
                     }
 
                     // Go back in time one day
-
                     currentDay = currentDay.AddDays(-1);
+
+                    // Debugging ...
+                    //day++;
+                    //if (day < days.Count)
+                    //{
+                    //    currentDay = days[day];
+                    //}
                 }
 
                 currentDay = DateTime.UtcNow.Date;
