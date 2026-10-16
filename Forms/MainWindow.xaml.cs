@@ -542,7 +542,10 @@ namespace OctopusData.Forms
                                         CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
                                     };
 
-                                    costs.Costs.Add(cd);
+                                    if (cd.Consumption > 0 || cd.CostType == "Standing Charge")
+                                    {
+                                        costs.Costs.Add(cd);
+                                    }
                                 }
                             }
 
