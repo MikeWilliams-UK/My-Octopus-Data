@@ -447,6 +447,7 @@ namespace OctopusData.Forms
                                         //Debugger.Break();
                                     }
 
+                                    // Assume post 03-Aug-2026 data
                                     if (!string.IsNullOrEmpty(statistic.Value))
                                     {
                                         cd.Consumption = double.Parse(statistic.Value);
@@ -454,9 +455,7 @@ namespace OctopusData.Forms
 
                                     switch (statistic.Type)
                                     {
-                                        case "CONSUMPTION":
-                                            //
-                                            break;
+                                        // Handle pre 03-Aug-2026 data
                                         case "CONSUMPTION_COST":
                                             if (edge.Node.MetaData.Statistics.Count == 2)
                                             {
@@ -465,7 +464,7 @@ namespace OctopusData.Forms
                                             break;
                                     }
 
-                                    if (cd.Consumption > 0 || cd.CostType == "Standing Charge")
+                                    if (cd.Consumption > 0)
                                     {
                                         costs.Costs.Add(cd);
                                     }
@@ -542,7 +541,7 @@ namespace OctopusData.Forms
                                         CostIncludingVat = double.Parse(statistic.CostInclTax.EstimatedAmount)
                                     };
 
-                                    if (cd.Consumption > 0 || cd.CostType == "Standing Charge")
+                                    if (cd.Consumption > 0)
                                     {
                                         costs.Costs.Add(cd);
                                     }
