@@ -19,8 +19,13 @@ https://www.guylipman.com/octopus/api_guide.html
 Useful web site for converting captured json to GraphQL
 -------------------------------------------------------
 https://developer.octopus.energy/guides/graphql/
-https://api.octopus.energy/v1/graphql/
 
+Web site used to use
+https://api.octopus.energy/v1/accounts
+Now uses
+https://octopus.energy/dashboard/new/api/graphql/
+
+https://api.octopus.energy/v1/graphql/
 Panels
 Top Left
     Query
@@ -33,7 +38,13 @@ Bottom Left
             "Authorization": "Bearer {{JWT From Postman}}"
         }
 
+OAuth server
+https://auth.octopus.energy/
+
 -- Useful SQLite queries
+
+DELETE FROM HalfHourlyCostsElectric
+WHERE StartTime >= '2026-09'
 
 SELECT StartTime,
        EndTime,
@@ -61,17 +72,11 @@ Select *
 FROM HalfHourlyCostsElectric
 Where 1=1
 AND Consumption > 0
-AND SUBSTR(CostType, 1, 2) = 'EV'
-AND StartTime BETWEEN '2026-08-16 10' AND '2026-08-16 16'
-ORDER BY StartTime DESC
-
--- All Electric Costs for a free hour
-Select *
-FROM HalfHourlyCostsElectric
-Where 1=1
-AND Consumption > 0
-AND StartTime > '2026-09-06 13' AND StartTime < '2026-09-06 15'
-ORDER BY StartTime, CostType
+--AND SUBSTR(CostType, 1, 2) = 'EV'
+AND StartTime >= '2026-09-27 13' AND StartTime < '2026-09-27 15'
+--AND StartTime >= '2026-10-04 12' AND StartTime < '2026-10-04 14'
+--AND StartTime >= '2026-10-18 00' AND StartTime < '2026-10-18 14'
+--AND StartTime >= '2025-11' AND StartTime <= '2025-12'
 
 -- All Gas Charges
 Select *
